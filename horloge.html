@@ -31,7 +31,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
 
 <body>
-     <svg id="horloge" width="400" height="400" viewBox="0 0 200 200">
+     <svg id="horloge" width="600" height="800" viewBox="0 0 200 200">
 
 
          <defs>
@@ -39,20 +39,23 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
              <!-- We use this svg space to draw our primitives.
              It also allows predictable behavior of gradients when using userSpaceOnUse (see #yellow_white below) -->
              <svg viewbox="0 0 100 100">
-                 <!-- Our primitives here!
+
+                 <!-- Our primitives here! I encourage the use of the p_ prefix on primitives' ids
+
                  Use a translate to center them around (0, 0) to make scaling/centering easier
                   This means that all of or primitives **will be placed by their CENTER position** -->
+
                  <defs>
 
                      <!-- userSpaceOnUse allows for the gradient to spread on groups
                       (instead of applying to each element) Since it applies to global viewBox space -->
-                      
+
                      <radialGradient id="yellow_white" gradientUnits="userSpaceOnUse">
                          <stop offset="0%" stop-color="yellow"/>
                          <stop offset="100%" stop-color="black"/>  <!-- Black for testing/example -->
                      </radialGradient>
 
-                     <g id="sun" transform="translate(-50 -50)" fill="url('#yellow_white')">
+                     <g id="p_sun" transform="translate(-50 -50)" fill="url('#yellow_white')">
                          <circle r="25" cx="50" cy="75"/>
                          <rect x="25" y="0" width="50" height="50"/>
                          <!-- spikes will be added with JS; -->
@@ -64,11 +67,14 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                  </defs>
              </svg>
 
+        <!-- example of use -->
+         <!-- Need to create a scaled instance before setting a position ... (If I need to scale that is)-->
+        <use xlink:href="#p_sun" transform="scale(5)" id="big_sun"/>
 
          </defs>
 
-        <!-- example of use -->
-        <use xlink:href="#sun" x="50" y="50" transform="scale(2)"/>
+        <!-- Finally, I can position correctly with it's center -->
+         <use xlink:href="#big_sun" x="50" y="50"/>
 
 
 
