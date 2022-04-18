@@ -11,15 +11,67 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
 -->
 
-<html>
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
-    <meta lang="en">
-
+    <title>Horloge</title>
 
     <!-- Define our functions here -->
     <script>
+        window.onload = init;
+
+
+        function init() {
+            initPrimitives();
+        }
+
+
+        function initPrimitives() {
+            finishSun();
+
+            // We see that the code works, but the <use> are not updating when we update primitive with JS
+            document.getElementById("horloge").innerHTML += document.getElementById("p_sun").innerHTML
+
+        }
+
+        
+        function finishSun() {
+            let sun = document.getElementById("p_sun");
+            const r = Number(sun.firstElementChild.getAttribute("r"));
+
+            const spikeCount = 32
+            const increment = 2 * Math.PI / spikeCount
+
+            for (let i = 0; i < spikeCount; i++) {
+                let triangle = document.createElement("polygon");
+
+                let theta1 = i * increment;
+                let thetaMid = (i + 0.5) * increment;
+                let theta2 = (i + 1) * increment;
+
+                let growth = 1.75
+                if (i % 2 !== 0) { growth = 1.5 }
+
+                let points = [
+                    [50 + r * Math.cos(theta1), 50 + r * Math.sin(theta1)],
+                    [50 + (r * growth) * Math.cos(thetaMid), 50 + (r * growth) * Math.sin(thetaMid)],
+                    [50 + r * Math.cos(theta2), 50 + r * Math.sin(theta2)]
+                ];
+
+                let attr = "";
+                for (let point of points) {
+                    attr += point[0] + "," + point[1];
+
+                    if (point !== points[2]) { attr += " " }
+                }
+
+                triangle.setAttribute("points", attr);
+                sun.appendChild(triangle);
+
+            }
+            //console.log(sun.innerHTML);
+        }
 
 
     </script>
@@ -28,58 +80,56 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 </head>
 
 
-
-
 <body>
-     <svg id="horloge" width="600" height="800" viewBox="0 0 200 200">
 
+<svg id="p_draw" width="0" height="0" viewbox="0 0 100 100">
 
-         <defs>
+    <!-- Our primitives here! I encourage the use of the p_ prefix on primitives' ids
 
-             <!-- We use this svg space to draw our primitives.
+    Use a translate to center them around (0, 0) to make scaling/centering easier
+     This means that all of or primitives **will be placed by their CENTER position** -->
+
+    <defs>
+        <!-- We use this svg space to draw our primitives.
              It also allows predictable behavior of gradients when using userSpaceOnUse (see #yellow_white below) -->
-             <svg viewbox="0 0 100 100">
 
-                 <!-- Our primitives here! I encourage the use of the p_ prefix on primitives' ids
+        <!-- userSpaceOnUse allows for the gradient to spread on groups
+         (instead of applying to each element) Since it applies to global viewBox space -->
 
-                 Use a translate to center them around (0, 0) to make scaling/centering easier
-                  This means that all of or primitives **will be placed by their CENTER position** -->
+        <radialGradient id="yellow_white" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="yellow"/>
+            <stop offset="100%" stop-color="white"/>  <!-- Black for testing/example -->
+        </radialGradient>
 
-                 <defs>
+    </defs>
 
-                     <!-- userSpaceOnUse allows for the gradient to spread on groups
-                      (instead of applying to each element) Since it applies to global viewBox space -->
+    <g id="p_sun" transform="translate(-50 -50)" fill="url('#yellow_white')">
+        <circle r="20" cx="50" cy="50"/>
 
-                     <radialGradient id="yellow_white" gradientUnits="userSpaceOnUse">
-                         <stop offset="0%" stop-color="yellow"/>
-                         <stop offset="100%" stop-color="black"/>  <!-- Black for testing/example -->
-                     </radialGradient>
+        <!--TODO 'use' instances were not updating after this was added by DOM... need a fix.
+         Until then I copy-pasted the innerHTML ... -->
+        <polygon points="70,50 84.83146543352689,53.43059991153462 69.61570560806462,53.90180644032257"></polygon><polygon points="69.61570560806462,53.90180644032257 78.70821007196626,58.70854031763387 68.47759065022574,57.6536686473018"></polygon><polygon points="68.47759065022574,57.6536686473018 80.86724425219242,66.49888578890992 66.62939224605091,61.11140466039204"></polygon><polygon points="66.62939224605091,61.11140466039204 73.1903136008821,69.03179852490936 64.14213562373095,64.14213562373095"></polygon><polygon points="64.14213562373095,64.14213562373095 72.20376494572758,77.0553658676958 61.11140466039205,66.62939224605091"></polygon><polygon points="61.11140466039205,66.62939224605091 64.14190210477993,76.45763793045064 57.6536686473018,68.47759065022574"></polygon><polygon points="57.6536686473018,68.47759065022574 60.15996370390618,83.49291175062731 53.90180644032257,69.61570560806462"></polygon><polygon points="53.90180644032257,69.61570560806462 52.94051420988682,79.85554180016591 50,70"></polygon><polygon points="50,70 46.56940008846538,84.83146543352689 46.09819355967743,69.61570560806462"></polygon><polygon points="46.09819355967743,69.61570560806462 41.29145968236614,78.70821007196626 42.34633135269821,68.47759065022574"></polygon><polygon points="42.34633135269821,68.47759065022574 33.50111421109008,80.86724425219242 38.88859533960796,66.62939224605091"></polygon><polygon points="38.88859533960796,66.62939224605091 30.968201475090638,73.19031360088212 35.85786437626905,64.14213562373095"></polygon><polygon points="35.85786437626905,64.14213562373095 22.944634132304206,72.20376494572758 33.370607753949095,61.11140466039204"></polygon><polygon points="33.370607753949095,61.11140466039204 23.542362069549352,64.14190210477993 31.522409349774264,57.6536686473018"></polygon><polygon points="31.522409349774264,57.6536686473018 16.507088249372693,60.159963703906186 30.38429439193539,53.901806440322574"></polygon><polygon points="30.38429439193539,53.901806440322574 20.144458199834094,52.94051420988683 30,50"></polygon><polygon points="30,50 15.168534566473106,46.56940008846538 30.38429439193539,46.09819355967743"></polygon><polygon points="30.38429439193539,46.09819355967743 21.291789928033733,41.29145968236614 31.522409349774264,42.34633135269821"></polygon><polygon points="31.522409349774264,42.34633135269821 19.132755747807572,33.50111421109008 33.37060775394909,38.88859533960796"></polygon><polygon points="33.37060775394909,38.88859533960796 26.809686399117886,30.96820147509064 35.85786437626905,35.85786437626905"></polygon><polygon points="35.85786437626905,35.85786437626905 27.796235054272394,22.944634132304216 38.88859533960796,33.370607753949095"></polygon><polygon points="38.88859533960796,33.370607753949095 35.85809789522006,23.542362069549352 42.34633135269819,31.52240934977427"></polygon><polygon points="42.34633135269819,31.52240934977427 39.840036296093814,16.507088249372693 46.098193559677426,30.384294391935395"></polygon><polygon points="46.098193559677426,30.384294391935395 47.059485790113186,20.14445819983409 49.99999999999999,30"></polygon><polygon points="49.99999999999999,30 53.4305999115346,15.168534566473106 53.90180644032257,30.38429439193539"></polygon><polygon points="53.90180644032257,30.38429439193539 58.70854031763386,21.291789928033733 57.6536686473018,31.522409349774268"></polygon><polygon points="57.6536686473018,31.522409349774268 66.49888578890992,19.132755747807572 61.11140466039204,33.37060775394909"></polygon><polygon points="61.11140466039204,33.37060775394909 69.03179852490936,26.809686399117894 64.14213562373095,35.85786437626905"></polygon><polygon points="64.14213562373095,35.85786437626905 77.05536586769578,27.796235054272394 66.62939224605091,38.88859533960796"></polygon><polygon points="66.62939224605091,38.88859533960796 76.45763793045064,35.85809789522006 68.47759065022572,42.34633135269819"></polygon><polygon points="68.47759065022572,42.34633135269819 83.49291175062731,39.840036296093814 69.6157056080646,46.098193559677426"></polygon><polygon points="69.6157056080646,46.098193559677426 79.85554180016591,47.059485790113186 70,49.99999999999999"></polygon>
+    </g>
 
-                     <g id="p_sun" transform="translate(-50 -50)" fill="url('#yellow_white')">
-                         <circle r="25" cx="50" cy="75"/>
-                         <rect x="25" y="0" width="50" height="50"/>
-                         <!-- spikes will be added with JS; -->
-                     </g>
+</svg>
 
 
+<svg id="horloge" width="600" height="800" viewBox="0 0 200 200">
 
 
-                 </defs>
-             </svg>
+    <defs>
 
         <!-- example of use -->
-         <!-- Need to create a scaled instance before setting a position ... (If I need to scale that is)-->
-        <use xlink:href="#p_sun" transform="scale(5)" id="big_sun"/>
+        <!-- Need to create a scaled instance before setting a position ... (If I need to scale that is)-->
+        <use xlink:href="#p_sun" transform="scale(2)" id="big_sun"/>
 
-         </defs>
+    </defs>
 
-        <!-- Finally, I can position correctly with it's center -->
-         <use xlink:href="#big_sun" x="50" y="50"/>
-
-
+    <!-- Finally, I can position correctly with it's center -->
+    <use href="#p_sun" x="100" y="50"/>
 
 
-     </svg>
+</svg>
 
 </body>
 
