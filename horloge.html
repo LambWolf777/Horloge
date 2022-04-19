@@ -4,11 +4,8 @@
     Nom                     |    id ssh     |       matricule   |
 ----------------------------------------------------------------|
 Matthieu Beauchamp-Boulay   |   beaumatt    |       20234205    |
-
-
-
+Zacharie Martel             |   martelza    |       20231059    |
 Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
-
 -->
 
 <html lang="en">
@@ -18,20 +15,83 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
     <title>Horloge</title>
 
     <!-- Define our functions here -->
+    <!-- getTime() void function, changes time in html document -->
     <script>
         window.onload = init;
 
 
         function init() {
             initPrimitives();
+            setInterval(getTimeVariables, 1000);
+            meteo();
         }
-
 
         function initPrimitives() {
             finishSun();
+        }
+
+        function moon_phase(meteo) {
+            var daily = meteo.daily;
+            var moon_phase = daily[0]["moon_phase"];
+            var moon_name = "";
+
+            if (moon_phase == 0 || moon_phase == 1){
+                moon_name = 'new moon';
+            } else if (moon_phase == 0.25) {
+                moon_name = 'first quarter moon';
+            } else if (moon_phase == 0.5) {
+                moon_name = 'full moon';
+            } else if (moon_phase == 0.75) {
+                moon_name = 'last quarter moon';
+            } else if (moon_phase > 0 && moon_phase < 0.25) {
+                moon_name = 'waxing crescent';
+            } else if (moon_phase > 0.25 && moon_phase < 0.5) {
+                moon_name = 'waxing gibous';
+            } else if (moon_phase > 0.5 && moon_phase < 0.75) {
+                moon_name = 'waning gibous';
+            } else if (moon_phase > 0.75 && moon_phase < 1) {
+                moon_name = 'waning crescent';
+            }
+
+            document.getElementById("x-moon_name").innerHTML = moon_name;
+            document.getElementById("x-moon_phase").innerHTML = moon_phase;
+            
+        }
+
+        function meteo() {
+            var url = "https://api.openweathermap.org/data/2.5/onecall?lat=45.5028&lon=-73.608&units=metric&lang=fr&appid=4ea015650a69d241ca53c20cda9f14ea"
+            var req = new XMLHttpRequest();
+            req.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var meteo=JSON.parse(this.responseText);
+                    moon_phase(meteo);
+                }
+            };
+            req.open("GET", url, true);
+            req.send();
 
         }
 
+        function getTimeVariables() {
+            var now = new Date();
+
+            var heure = now.getHours();
+            var minute = now.getMinutes();
+            var seconde = now.getSeconds();
+            
+            var annee = now.getFullYear();
+            var mois = now.getMonth();
+            var jour = now.getDate();
+
+            var listeMois = ["janvier","février", "mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+
+            document.getElementById("x-heure").innerHTML = heure;
+            document.getElementById("x-minute").innerHTML = minute;
+            document.getElementById("x-seconde").innerHTML = seconde;
+            document.getElementById("x-annee").innerHTML = annee;
+            document.getElementById("x-mois").innerHTML = listeMois[mois];
+            document.getElementById("x-jour").innerHTML = jour;
+        }
 
         function finishSun() {
             let sun = document.getElementById("p_sun");
@@ -65,7 +125,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
                 triangle.setAttribute("points", attr);
                 sun.appendChild(triangle);
-
+                
             }
         }
 
@@ -81,7 +141,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 <svg id="p_draw" width="0" height="0" viewbox="0 0 100 100">
 
     <!-- Our primitives here! I encourage the use of the p_ prefix on primitives' ids
-
     Use a translate to center them around (0, 0) to make scaling/centering easier
      This means that all of or primitives **will be placed by their CENTER position** -->
 
@@ -128,6 +187,20 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
 
 </svg>
+
+<ul>
+    <li>L´année: <span id="x-annee"></span></li>
+    <li>Mois: <span id="x-mois"></span></li>
+    <li>Jour: <span id="x-jour"></span></li>
+    <li>Heure: <span id="x-heure"></span></li>
+    <li>Minute: <span id="x-minute"></span></li>
+    <li>Seconde: <span id="x-seconde"></span></li>
+</ul>
+
+<ul>
+    <li>Phase de la lune: <span id="x-moon_phase"></span></li>
+    <li>Nom de la phase: <span id="x-moon_name"></span></li>
+</ul>
 
 </body>
 
