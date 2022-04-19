@@ -19,52 +19,55 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
     <script>
         window.onload = init;
 
+        // Initializers //////////////////////////////////////////////////////
 
         function init() {
             initPrimitives();
-            setInterval(getTimeVariables, 1000);
-            meteo();
+
+            updateTime(); getMeteo();
+
+            setInterval(updateTime, 1000); // every second
+            setInterval(getMeteo, 60000); // every minute
         }
 
         function initPrimitives() {
             finishSun();
         }
 
-        function moon_phase(meteo) {
-            var daily = meteo.daily;
-            var moon_phase = daily[0]["moon_phase"];
-            var moon_name = "";
+        //////////////////////////////////////////////////////////////////////
 
-            if (moon_phase == 0 || moon_phase == 1){
-                moon_name = 'new moon';
-            } else if (moon_phase == 0.25) {
-                moon_name = 'first quarter moon';
-            } else if (moon_phase == 0.5) {
-                moon_name = 'full moon';
-            } else if (moon_phase == 0.75) {
-                moon_name = 'last quarter moon';
-            } else if (moon_phase > 0 && moon_phase < 0.25) {
-                moon_name = 'waxing crescent';
-            } else if (moon_phase > 0.25 && moon_phase < 0.5) {
-                moon_name = 'waxing gibous';
-            } else if (moon_phase > 0.5 && moon_phase < 0.75) {
-                moon_name = 'waning gibous';
-            } else if (moon_phase > 0.75 && moon_phase < 1) {
-                moon_name = 'waning crescent';
-            }
 
-            document.getElementById("x-moon_name").innerHTML = moon_name;
-            document.getElementById("x-moon_phase").innerHTML = moon_phase;
-            
+        // Updaters (macro) //////////////////////////////////////////////////
+
+        function updateTime () {
+            let time = getTime()
+
+            // set clock times here ...
         }
 
-        function meteo() {
-            var url = "https://api.openweathermap.org/data/2.5/onecall?lat=45.5028&lon=-73.608&units=metric&lang=fr&appid=4ea015650a69d241ca53c20cda9f14ea"
+        // This is called by getMeteo once we receive API response
+        // where meteo is the complete JSON data
+        function updateMeteo(meteo) {
+            // See https://openweathermap.org/api/one-call-api#example for JSON structure
+
+            moon_phase(meteo["daily"][0]["moon_phase"])
+        }
+
+        //////////////////////////////////////////////////////////////////////
+
+
+        // get Info //////////////////////////////////////////////////////////
+
+        function getMeteo() {
+            var url = "https://api.openweathermap.org/data/2.5/onecall?lat=45.5028" +
+                "&lon=-73.608&units=metric&lang=fr&appid=4ea015650a69d241ca53c20cda9f14ea"
+
             var req = new XMLHttpRequest();
             req.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
-                    var meteo=JSON.parse(this.responseText);
-                    moon_phase(meteo);
+                if (this.readyState === 4 && this.status === 200) {
+                    var meteo = JSON.parse(this.responseText);
+
+                    updateMeteo(meteo);
                 }
             };
             req.open("GET", url, true);
@@ -72,63 +75,165 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         }
 
-        function getTimeVariables() {
+        function getTime() {
             var now = new Date();
 
-            var heure = now.getHours();
-            var minute = now.getMinutes();
-            var seconde = now.getSeconds();
-            
-            var annee = now.getFullYear();
-            var mois = now.getMonth();
-            var jour = now.getDate();
+            // This would probably go in the display function
+            var listeMois = ["janvier","février", "mars","avril","mai","juin",
+                "juillet","août","septembre","octobre","novembre","décembre"];
 
-            var listeMois = ["janvier","février", "mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+            let time = {
+                "an":   now.getFullYear(),
+                "mois": now.getMonth(),
+                "jour": now.getDate(),
 
-            document.getElementById("x-heure").innerHTML = heure;
-            document.getElementById("x-minute").innerHTML = minute;
-            document.getElementById("x-seconde").innerHTML = seconde;
-            document.getElementById("x-annee").innerHTML = annee;
-            document.getElementById("x-mois").innerHTML = listeMois[mois];
-            document.getElementById("x-jour").innerHTML = jour;
+                "h":    now.getHours(),
+                "min":  now.getMinutes(),
+                "sec":  now.getSeconds()
+            }
+
+            // 'testing'
+            for (const [key, value] of Object.entries(time)) {
+                document.getElementById("x-"+key).innerHTML = value;
+            }
+
+            return time
         }
+
+        //////////////////////////////////////////////////////////////////////
+
+
+        // DOM / micro updaters //////////////////////////////////////////////
+
+        // Il serait peut etre mieux de faire un seul dessin de lune qui s'ajuste ...
+        // We could also just set the moon phase to it's closest phase instead of
+        //      making 8 presets... but it's inaccurate
+        function moon_phase(moonPhase) {
+            var moon_name;
+
+            if (moonPhase === 0 || moonPhase === 1){
+                moon_name = 'new moon';
+            } else if (moonPhase == 0.25) {
+                moon_name = 'first quarter moon';
+            } else if (moonPhase == 0.5) {
+                moon_name = 'full moon';
+            } else if (moonPhase == 0.75) {
+                moon_name = 'last quarter moon';
+            } else if (moonPhase < 0.25) {
+                moon_name = 'waxing crescent';
+            } else if (moonPhase < 0.5) {
+                moon_name = 'waxing gibous';
+            } else if (moonPhase < 0.75) {
+                moon_name = 'waning gibous';
+            } else {
+                moon_name = 'waning crescent';
+            }
+
+            // TODO: remove me
+            document.getElementById("x-moon_name").innerHTML = moon_name;
+            document.getElementById("x-moon_phase").innerHTML = moonPhase;
+
+        }
+
+        //////////////////////////////////////////////////////////////////////
+
+
+        // SVG Generation ////////////////////////////////////////////////////
 
         function finishSun() {
             let sun = document.getElementById("p_sun");
             const r = Number(sun.firstElementChild.getAttribute("r"));
+            const cx = Number(sun.firstElementChild.getAttribute("cx"));
+            const cy = Number(sun.firstElementChild.getAttribute("cy"));
 
             const spikeCount = 32;
             const increment = 2 * Math.PI / spikeCount;
 
             for (let i = 0; i < spikeCount; i++) {
-                let triangle = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
 
                 let theta1 = i * increment;
-                let thetaMid = (i + 1.5) * increment; // adding above 1 makes it spiral
+                let thetaMid = (i + 0.5) * increment; // adding above 1 makes it spiral
                 let theta2 = (i + 1) * increment;
 
                 let growth = 2;
-                if (i % 2 !== 0) { growth = 1.75 }
+                if (i % 2 !== 0) { growth = 1.6 }
 
                 let points = [
-                    [50 + (r * 0.99) * Math.cos(theta1), 50 + (r * 0.99) * Math.sin(theta1)],
-                    [50 + (r * growth) * Math.cos(thetaMid), 50 + (r * growth) * Math.sin(thetaMid)],
-                    [50 + (r * 0.99) * Math.cos(theta2), 50 + (r * 0.99) * Math.sin(theta2)]
+                    polarPoint(cx, cy, 0.99*r, theta1),
+                    polarPoint(cx, cy, r*growth, thetaMid),
+                    polarPoint(cx, cy, 0.99*r, theta2)
                 ];
 
-                let attr = "";
-                for (let point of points) {
-                    attr += point[0] + "," + point[1];
-
-                    if (point !== points[2]) { attr += " " }
-                }
-
-                triangle.setAttribute("points", attr);
-                sun.appendChild(triangle);
-                
+                growSVG("p_sun", "polygon", { "points": pointsToAttr(points) })
             }
         }
 
+        //////////////////////////////////////////////////////////////////////
+
+
+        // Utils /////////////////////////////////////////////////////////////
+
+        // return a [x, y] point,
+        // allows to use angles as if we were using a right-handed coordinate
+        // system with the svg left-handed system
+        // Theta should be given in radians
+        function polarPoint(cx, cy, r, theta) {
+            let y = cy - r*Math.sin(theta)
+            let x = cx + r*Math.cos(theta)
+            return [x, y]
+        }
+
+
+        // Use this to make the hour/minutes/meteo cells around the clock
+        // Wait no, this is useless:
+        //      We should make two big circles and only make splitters (lines)
+        //      Then we can place our images or whatever with theta/2 and r+dr/2
+        //
+        // Return an array of four points: [[x, y], ...]
+        // See polarPoint info, angles work as in right-handed coords
+        function polarRect(cx, cy, r, dr, theta, dTheta) {
+            return [
+                polarPoint(cx, cy, r, theta),
+                polarPoint(cx, cy, r+dr, theta),
+                polarPoint(cx, cy, r+dr, theta+dTheta),
+                polarPoint(cx, cy, r, theta+dTheta)
+            ];
+        }
+
+
+        // take a [x, y] point and return as "x,y"
+        function pointToAttr (point) {
+            return point[0] + "," + point[1];
+        }
+
+        // take and array of points [[x, y] ... ]
+        // and as "x,y x2,y2 ..."  (use to set attributes)
+        function pointsToAttr (points) {
+            let txt = "";
+            for (point of points) {
+                txt += pointToAttr(point) + " ";
+            }
+            return txt.slice(0, -1);
+        }
+
+
+        // id is the id of the parent element to be grown
+        // tagName is the name of the SVG 'balise' (ex: circle, polygon...)
+        // attributes is an object = {
+        //                              "attributeName": "attributeValue"
+        //                              ... }
+        // see finishSun() for example of use
+        function growSVG (id, tagName, attributes) {
+            let elem = document.getElementById(id);
+            let newItem = document.createElementNS(
+                "http://www.w3.org/2000/svg", tagName);
+
+            for (const [key, value] of Object.entries(attributes)) {
+                newItem.setAttribute(key, value);
+            }
+
+            elem.appendChild(newItem);
+        }
 
     </script>
 
@@ -189,12 +294,12 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 </svg>
 
 <ul>
-    <li>L´année: <span id="x-annee"></span></li>
+    <li>L´année: <span id="x-an"></span></li>
     <li>Mois: <span id="x-mois"></span></li>
     <li>Jour: <span id="x-jour"></span></li>
-    <li>Heure: <span id="x-heure"></span></li>
-    <li>Minute: <span id="x-minute"></span></li>
-    <li>Seconde: <span id="x-seconde"></span></li>
+    <li>Heure: <span id="x-h"></span></li>
+    <li>Minute: <span id="x-min"></span></li>
+    <li>Seconde: <span id="x-sec"></span></li>
 </ul>
 
 <ul>
