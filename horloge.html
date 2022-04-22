@@ -27,9 +27,9 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
             // testPolarRect()
             // TODO move this out
-            genCadran(24, 500, 500, 400, 50, "h")
-            genCadran(60, 500, 500, 370, 30, "m")
-            genCadran(60, 500, 500, 350, 20, "s", true) // Not sure I like having the seconds in text
+            genCadran(24, 500, 500, 400, 50, "h", "time")
+            genCadran(60, 500, 500, 370, 30, "m", "time")
+            genCadran(60, 500, 500, 350, 20, "s", "time", true) // Not sure I like having the seconds in text
 
 
             updateTime();
@@ -114,7 +114,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         // DOM / micro updaters //////////////////////////////////////////////
 
-        // Il serait peut etre mieux de faire un seul dessin de lune qui s'ajuste ... 
+        // Il serait peut etre mieux de faire un seul dessin de lune qui s'ajuste ...
         // We could also just set the moon phase to it's closest phase instead of
         //      making 8 presets... but it's inaccurate
         function moon_phase(moonPhase) {
@@ -153,18 +153,14 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             ]
 
             for (let t of all) {
-                let current = time[t["name"]]
-                let prev = getPrevious(current, t["max"])
-                console.log(t["name"], current, prev)
+                let current = time[t["name"]];
+                let prev = getPrevious(current, t["max"]);
 
-                document.getElementById(t["name"] + "_" + prev).setAttribute("style", "animation: none")
-                document.getElementById(t["name"] + "_" + current).setAttribute("style", "animation: glowBlue 1s linear infinite")
-
-                // document.getElementById(t["name"] + "_" + prev).setAttribute("animation", "none")
-                // document.getElementById(t["name"] + "_" + current).setAttribute("animation", "glowBlue 2s linear infinite")
+                document.getElementById(t["name"] + "_" + prev).setAttribute("style", "animation: none");
+                document.getElementById(t["name"] + "_" + current).setAttribute("style", "animation: glowBlue 1s linear infinite");
             }
         }
-        
+
         //////////////////////////////////////////////////////////////////////
 
 
@@ -208,26 +204,25 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         // <pre>
         // idBase specifies what id/class name the elements should have:
         //      cell:   id = [idBase]_[i]  for i in [0, 1, 2 ... maxVal]
-        //              class = [idBase]_cell
-        //      txt:    class = [idBase]_txt
-        function genCadran(maxVal, cx, cy, r, dr, idBase, addText=true) {
+        //              class = [className]_cell
+        //      txt:    class1 = [idBase]_txt
+        //              class2 = [className]_txt
+        function genCadran(maxVal, cx, cy, r, dr, idBase, className, addText=true) {
             let theta = Math.PI / 2
             let increment = 2 * Math.PI / maxVal
 
             for (let i = 0; i < maxVal; i++) {
                 let start = theta - i*increment;
 
-                let path = polarRect(cx, cy, r, dr, start, -increment, true)
-
-                let id = idBase + "_" + i;
+                let path = polarRect(cx, cy, r, dr, start, -increment);
 
                 growSVG("horloge", "path",
                     {
                         "d": path,
-                        "id": id,
-                        "class": idBase + "_" + "cell"
+                        "id": idBase + "_" + i,
+                        "class": className + "_" + "cell"
                     }
-                )
+                );
 
                 if (addText) {
                     let center = polarPoint(cx, cy, r + dr / 2, start - increment / 2)
@@ -235,9 +230,9 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                         {
                             "x": center[0],
                             "y": center[1],
-                            "class": idBase + "_" + "txt"
+                            "class": idBase + "_" + "txt" + " " + className + "_" + "txt"
                         }
-                    )
+                    );
                     elem.innerHTML = i;
                 }
             }
@@ -251,29 +246,21 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         // Utils /////////////////////////////////////////////////////////////
 
-        function trueTheta (theta) {
-            while (theta < 0) {
-                theta += 2*Math.PI;
-            }
-            return theta % (2*Math.PI)
-        }
-
-
         function getPrevious (value, maxVal) {
             if (value === 0) {
-                return maxVal
+                return maxVal;
             }
-            return value - 1
+            return value - 1;
         }
 
         // return a [x, y] point, <br>
         // allows to use angles as if we were using a right-handed coordinate
         // system with the svg left-handed system <br>
-        // Theta should be given in radians 
+        // Theta should be given in radians
         function polarPoint(cx, cy, r, theta) {
-            let y = cy - r * Math.sin(trueTheta(theta))
-            let x = cx + r * Math.cos(trueTheta(theta))
-            return [x, y]
+            let y = cy - r * Math.sin(theta);
+            let x = cx + r * Math.cos(theta);
+            return [x, y];
         }
 
 
@@ -284,11 +271,11 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         // See polarPoint info, angles work as in right-handed coords
         //
         // Does NOT work for dTheta > 180 (takes small arc)
-        function polarRect(cx, cy, r, dr, theta, dTheta, invertSweep=false) {
+        function polarRect(cx, cy, r, dr, theta, dTheta) {
             let rotX = 0;
             let largeArc = 0;
-            let posSweep = Number(invertSweep);
-            let negSweep = Number(! invertSweep);
+            let posSweep = 1;
+            let negSweep = 0;
 
             let points = [
                 polarPoint(cx, cy, r, theta),
@@ -301,14 +288,14 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                  + [" L ", points[1][0], points[1][1]].join(" ")
                  + [" A ", r+dr, r+dr, rotX, largeArc, posSweep, points[2][0], points[2][1]].join(" ")
                  + [" L ", points[3][0], points[3][1]].join(" ")
-                 + [" A ", r, r, rotX, largeArc, negSweep, points[0][0], points[0][1]].join(" ")
+                 + [" A ", r, r, rotX, largeArc, negSweep, points[0][0], points[0][1]].join(" ");
 
         }
 
         function testPolarRect() {
             for (let r=250; r > 5; r -= 20) {
-                const nRects = 6
-                const increment = 2 * Math.PI / nRects
+                const nRects = 6;
+                const increment = 2 * Math.PI / nRects;
 
                 for (let i = 0; i < nRects; i++) {
                     if ( i % 2 === 0) {
@@ -317,7 +304,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                                 "d": polarRect(300, 400, r, 10, i * increment, increment),
                                 "fill": "black"
                             }
-                            )
+                            );
                     }
                 }
             }
@@ -347,7 +334,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         // attributes is an object = {
         //                              "attributeName": "attributeValue"
         //                              ... }
-        // 
+        //
         // see finishSun() for example of use
         // Returns a reference to the newly created element
         function growSVG(id, tagName, attributes) {
@@ -403,68 +390,45 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 </svg>
 
 
-<svg id="horloge" width="1000" height="1000" viewBox="0 0 1000 1000">
+<svg id="horloge" width="100%" height="100%" viewBox="0 0 1000 1000">
 
     <style>
-        path {
 
-        }
-
-
-        /* Todo: make general class (or other) to avoid duplication */
         /* TODO: find a way to make sure text always fit in the cells !important */
-        /* For text centering see the ressources linked in:
+            /* It seems to scale correctly ... */
+
+        /* For placing text by its center see the resources linked in:
                 https://stackoverflow.com/a/31522006  */
-        .h_txt {
+        .time_txt {
             dominant-baseline: middle;
             text-anchor: middle;
             font-weight: bold;
+        }
+
+        .h_txt {
             font-size:2em;
         }
 
         .m_txt {
-            dominant-baseline: middle;
-            text-anchor: middle;
-            font-weight: bold;
             font-size: 1.2em;
         }
 
         .s_txt {
-            dominant-baseline: middle;
-            text-anchor: middle;
-            font-weight: bold;
             font-size: 1em;
         }
 
-        .h_cell {
+        .time_cell {
             fill: lightgrey;
             stroke: black;
             stroke-width: 2px;
-        }
-
-        .m_cell {
-            fill: lightgrey;
-            stroke: black;
-            stroke-width: 2px;
-        }
-
-        .s_cell {
-            fill: lightgrey;
-            stroke: black;
-            stroke-width: 2px;
-            animation:none
         }
 
 
         @keyframes glowBlue {
             0% { fill: aqua }
-            50% { fill: rgb(0, 200, 200) }
+            50% { fill: rgb(0, 200, 200) } /* Darker */
             100% { fill: aqua }
         }
-
-
-
-
 
 
     </style>
