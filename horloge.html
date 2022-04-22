@@ -24,7 +24,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         function init() {
             initPrimitives();
-            
+
             // testPolarRect()
 
             updateTime();
@@ -196,12 +196,12 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         // theta is the initial angle,
         // See polarPoint info, angles work as in right-handed coords
         //
-        // Does NOT work for angles > 180
-        // Weird behavior when working with small radius, see testPolarRect
+        // Does NOT work for dTheta > 180 (takes small arc)
         function polarRect(cx, cy, r, dr, theta, dTheta) {
             let rotX = 0;
             let largeArc = 0;
-            let sweep = 1;
+            let posSweep = 0;
+            let negSweep = 1;
 
             let points = [
                 polarPoint(cx, cy, r, theta),
@@ -212,9 +212,9 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
             return ["M ", points[0][0], points[0][1]].join(" ")
                  + [" L ", points[1][0], points[1][1]].join(" ")
-                 + [" A ", r, r, rotX, largeArc, (sweep-1), points[2][0], points[2][1]].join(" ")
+                 + [" A ", r+dr, r+dr, rotX, largeArc, posSweep, points[2][0], points[2][1]].join(" ")
                  + [" L ", points[3][0], points[3][1]].join(" ")
-                 + [" A ", r, r, rotX, largeArc, sweep, points[0][0], points[0][1]].join(" ")
+                 + [" A ", r, r, rotX, largeArc, negSweep, points[0][0], points[0][1]].join(" ")
 
         }
 
@@ -271,6 +271,8 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
             elem.appendChild(newItem);
         }
+
+        //////////////////////////////////////////////////////////////////////
 
     </script>
 
