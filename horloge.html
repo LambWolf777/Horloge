@@ -29,7 +29,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             // TODO move this out
             genCadran(24, 500, 500, 400, 50, "h")
             genCadran(60, 500, 500, 370, 30, "m")
-            genCadran(60, 500, 500, 350, 20, "s")
+            genCadran(60, 500, 500, 350, 20, "s", true) // Not sure I like having the seconds in text
 
 
             updateTime();
@@ -55,10 +55,10 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             setTime(time);
         }
 
-        // This is called by getMeteo once we receive API response
-        // where meteo is the complete JSON data
+        // This is called by getMeteo once we receive API response,
+        // where meteo is the complete JSON data.
+        // See https://openweathermap.org/api/one-call-api#example for JSON structure
         function updateMeteo(meteo) {
-            // See https://openweathermap.org/api/one-call-api#example for JSON structure
 
             moon_phase(meteo["daily"][0]["moon_phase"])
         }
@@ -82,7 +82,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             };
             req.open("GET", url, true);
             req.send();
-
         }
 
         function getTime() {
@@ -115,7 +114,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         // DOM / micro updaters //////////////////////////////////////////////
 
-        // Il serait peut etre mieux de faire un seul dessin de lune qui s'ajuste ...
+        // Il serait peut etre mieux de faire un seul dessin de lune qui s'ajuste ... 
         // We could also just set the moon phase to it's closest phase instead of
         //      making 8 presets... but it's inaccurate
         function moon_phase(moonPhase) {
@@ -165,6 +164,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                 // document.getElementById(t["name"] + "_" + current).setAttribute("animation", "glowBlue 2s linear infinite")
             }
         }
+        
         //////////////////////////////////////////////////////////////////////
 
 
@@ -203,13 +203,14 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         // TODO: document this,
         // We might want to split this up since this is very specific for
-        // making the hours and minutes cells...
-        // maxVal is the number of cells (24 for hours...)
+        // making the hours and minutes cells... <br>
+        // maxVal is the number of cells (24 for hours...) <br>
+        // <pre>
         // idBase specifies what id/class name the elements should have:
         //      cell:   id = [idBase]_[i]  for i in [0, 1, 2 ... maxVal]
         //              class = [idBase]_cell
         //      txt:    class = [idBase]_txt
-        function genCadran(maxVal, cx, cy, r, dr, idBase) {
+        function genCadran(maxVal, cx, cy, r, dr, idBase, addText=true) {
             let theta = Math.PI / 2
             let increment = 2 * Math.PI / maxVal
 
@@ -228,15 +229,17 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                     }
                 )
 
-                let center = polarPoint(cx, cy, r+dr/2, start-increment/2)
-                let elem = growSVG("horloge", "text",
-                    {
-                        "x": center[0],
-                        "y": center[1],
-                        "class": idBase + "_" + "txt"
-                    }
-                )
-                elem.innerHTML = i;
+                if (addText) {
+                    let center = polarPoint(cx, cy, r + dr / 2, start - increment / 2)
+                    let elem = growSVG("horloge", "text",
+                        {
+                            "x": center[0],
+                            "y": center[1],
+                            "class": idBase + "_" + "txt"
+                        }
+                    )
+                    elem.innerHTML = i;
+                }
             }
         }
 
@@ -263,10 +266,10 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             return value - 1
         }
 
-        // return a [x, y] point,
+        // return a [x, y] point, <br>
         // allows to use angles as if we were using a right-handed coordinate
-        // system with the svg left-handed system
-        // Theta should be given in radians
+        // system with the svg left-handed system <br>
+        // Theta should be given in radians 
         function polarPoint(cx, cy, r, theta) {
             let y = cy - r * Math.sin(trueTheta(theta))
             let x = cx + r * Math.cos(trueTheta(theta))
@@ -274,10 +277,10 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         }
 
 
-        // Return a string of path data for a polar rectangle
-        // cx, cy are center coords
-        // r is the radius of the inner border dr is the 'depth'
-        // theta is the initial angle,
+        // Return a string of path data for a polar rectangle <br>
+        // cx, cy are center coords  <br>
+        // r is the radius of the inner border dr is the 'depth' <br>
+        // theta is the initial angle, <br>
         // See polarPoint info, angles work as in right-handed coords
         //
         // Does NOT work for dTheta > 180 (takes small arc)
@@ -326,7 +329,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             return point[0] + "," + point[1];
         }
 
-        // take and array of points [[x, y] ... ]
+        // take and array of points [[x, y] ... ] <br>
         // and as "x,y x2,y2 ..."  (use to set attributes)
         function pointsToAttr(points) {
             let txt = "";
@@ -337,12 +340,14 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         }
 
 
-        // Add a child element to another svg element and set attributes
-        // id is the id of the parent element to be grown
-        // tagName is the name of the SVG 'balise' (ex: circle, polygon...)
+        // Add a child element to another svg element and set attributes <br>
+        // id is the id of the parent element to be grown <br>
+        // tagName is the name of the SVG 'balise' (ex: circle, polygon...) <br>
+        // <pre>
         // attributes is an object = {
         //                              "attributeName": "attributeValue"
         //                              ... }
+        // 
         // see finishSun() for example of use
         // Returns a reference to the newly created element
         function growSVG(id, tagName, attributes) {
