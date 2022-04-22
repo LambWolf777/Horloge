@@ -28,7 +28,9 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             // testPolarRect()
             // TODO move this out
             genCadran(24, 500, 500, 400, 50, "h")
-            genCadran(60, 500, 500, 350, 50, "m")
+            genCadran(60, 500, 500, 370, 30, "m")
+            genCadran(60, 500, 500, 350, 20, "s")
+
 
             updateTime();
             getMeteo();
@@ -50,6 +52,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             let time = getTime()
 
             // set clock times here ...
+            setTime(time);
         }
 
         // This is called by getMeteo once we receive API response
@@ -95,8 +98,8 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                 "jour": now.getDate(),
 
                 "h": now.getHours(),
-                "min": now.getMinutes(),
-                "sec": now.getSeconds()
+                "m": now.getMinutes(),
+                "s": now.getSeconds()
             }
 
             // 'testing'
@@ -142,6 +145,26 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         }
 
+
+        function setTime(time) {
+            let all = [
+                {"name": "h", "max": 23},
+                {"name": "m", "max": 59},
+                {"name": "s", "max": 59}
+            ]
+
+            for (let t of all) {
+                let current = time[t["name"]]
+                let prev = getPrevious(current, t["max"])
+                console.log(t["name"], current, prev)
+
+                document.getElementById(t["name"] + "_" + prev).setAttribute("style", "animation: none")
+                document.getElementById(t["name"] + "_" + current).setAttribute("style", "animation: glowBlue 1s linear infinite")
+
+                // document.getElementById(t["name"] + "_" + prev).setAttribute("animation", "none")
+                // document.getElementById(t["name"] + "_" + current).setAttribute("animation", "glowBlue 2s linear infinite")
+            }
+        }
         //////////////////////////////////////////////////////////////////////
 
 
@@ -194,7 +217,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                 let start = theta - i*increment;
 
                 let path = polarRect(cx, cy, r, dr, start, -increment, true)
-                console.log(path)
 
                 let id = idBase + "_" + i;
 
@@ -233,6 +255,13 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             return theta % (2*Math.PI)
         }
 
+
+        function getPrevious (value, maxVal) {
+            if (value === 0) {
+                return maxVal
+            }
+            return value - 1
+        }
 
         // return a [x, y] point,
         // allows to use angles as if we were using a right-handed coordinate
@@ -373,12 +402,12 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
     <style>
         path {
-            fill: lightgrey;
-            stroke: black;
-            stroke-width: 2px;
+
         }
 
 
+        /* Todo: make general class (or other) to avoid duplication */
+        /* TODO: find a way to make sure text always fit in the cells !important */
         /* For text centering see the ressources linked in:
                 https://stackoverflow.com/a/31522006  */
         .h_txt {
@@ -394,6 +423,43 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             font-weight: bold;
             font-size: 1.2em;
         }
+
+        .s_txt {
+            dominant-baseline: middle;
+            text-anchor: middle;
+            font-weight: bold;
+            font-size: 1em;
+        }
+
+        .h_cell {
+            fill: lightgrey;
+            stroke: black;
+            stroke-width: 2px;
+        }
+
+        .m_cell {
+            fill: lightgrey;
+            stroke: black;
+            stroke-width: 2px;
+        }
+
+        .s_cell {
+            fill: lightgrey;
+            stroke: black;
+            stroke-width: 2px;
+            animation:none
+        }
+
+
+        @keyframes glowBlue {
+            0% { fill: aqua }
+            50% { fill: rgb(0, 200, 200) }
+            100% { fill: aqua }
+        }
+
+
+
+
 
 
     </style>
@@ -422,8 +488,8 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
     <li>Mois: <span id="x-mois"></span></li>
     <li>Jour: <span id="x-jour"></span></li>
     <li>Heure: <span id="x-h"></span></li>
-    <li>Minute: <span id="x-min"></span></li>
-    <li>Seconde: <span id="x-sec"></span></li>
+    <li>Minute: <span id="x-m"></span></li>
+    <li>Seconde: <span id="x-s"></span></li>
 </ul>
 
 <ul>
