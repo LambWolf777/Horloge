@@ -19,12 +19,16 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
     <script>
         window.onload = init;
 
+
         // Initializers //////////////////////////////////////////////////////
 
         function init() {
             initPrimitives();
+            
+            // testPolarRect()
 
-            updateTime(); getMeteo();
+            updateTime();
+            getMeteo();
 
             setInterval(updateTime, 1000); // every second
             setInterval(getMeteo, 60000); // every minute
@@ -39,7 +43,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         // Updaters (macro) //////////////////////////////////////////////////
 
-        function updateTime () {
+        function updateTime() {
             let time = getTime()
 
             // set clock times here ...
@@ -63,7 +67,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                 "&lon=-73.608&units=metric&lang=fr&appid=4ea015650a69d241ca53c20cda9f14ea"
 
             var req = new XMLHttpRequest();
-            req.onreadystatechange = function() {
+            req.onreadystatechange = function () {
                 if (this.readyState === 4 && this.status === 200) {
                     var meteo = JSON.parse(this.responseText);
 
@@ -79,22 +83,22 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             var now = new Date();
 
             // This would probably go in the display function
-            var listeMois = ["janvier","février", "mars","avril","mai","juin",
-                "juillet","août","septembre","octobre","novembre","décembre"];
+            var listeMois = ["janvier", "février", "mars", "avril", "mai", "juin",
+                "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 
             let time = {
-                "an":   now.getFullYear(),
+                "an": now.getFullYear(),
                 "mois": now.getMonth(),
                 "jour": now.getDate(),
 
-                "h":    now.getHours(),
-                "min":  now.getMinutes(),
-                "sec":  now.getSeconds()
+                "h": now.getHours(),
+                "min": now.getMinutes(),
+                "sec": now.getSeconds()
             }
 
             // 'testing'
             for (const [key, value] of Object.entries(time)) {
-                document.getElementById("x-"+key).innerHTML = value;
+                document.getElementById("x-" + key).innerHTML = value;
             }
 
             return time
@@ -111,7 +115,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         function moon_phase(moonPhase) {
             var moon_name;
 
-            if (moonPhase === 0 || moonPhase === 1){
+            if (moonPhase === 0 || moonPhase === 1) {
                 moon_name = 'new moon';
             } else if (moonPhase == 0.25) {
                 moon_name = 'first quarter moon';
@@ -156,15 +160,17 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                 let theta2 = (i + 1) * increment;
 
                 let growth = 2;
-                if (i % 2 !== 0) { growth = 1.6 }
+                if (i % 2 !== 0) {
+                    growth = 1.6
+                }
 
                 let points = [
-                    polarPoint(cx, cy, 0.99*r, theta1),
-                    polarPoint(cx, cy, r*growth, thetaMid),
-                    polarPoint(cx, cy, 0.99*r, theta2)
+                    polarPoint(cx, cy, 0.99 * r, theta1),
+                    polarPoint(cx, cy, r * growth, thetaMid),
+                    polarPoint(cx, cy, 0.99 * r, theta2)
                 ];
 
-                growSVG("p_sun", "polygon", { "points": pointsToAttr(points) })
+                growSVG("p_sun", "polygon", {"points": pointsToAttr(points)})
             }
         }
 
@@ -178,37 +184,67 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         // system with the svg left-handed system
         // Theta should be given in radians
         function polarPoint(cx, cy, r, theta) {
-            let y = cy - r*Math.sin(theta)
-            let x = cx + r*Math.cos(theta)
+            let y = cy - r * Math.sin(theta)
+            let x = cx + r * Math.cos(theta)
             return [x, y]
         }
 
 
-        // Use this to make the hour/minutes/meteo cells around the clock
-        // Wait no, this is useless:
-        //      We should make two big circles and only make splitters (lines)
-        //      Then we can place our images or whatever with theta/2 and r+dr/2
-        //
-        // Return an array of four points: [[x, y], ...]
+        // Return a string of path data for a polar rectangle
+        // cx, cy are center coords
+        // r is the radius of the inner border dr is the 'depth'
+        // theta is the initial angle,
         // See polarPoint info, angles work as in right-handed coords
+        //
+        // Does NOT work for angles > 180
+        // Weird behavior when working with small radius, see testPolarRect
         function polarRect(cx, cy, r, dr, theta, dTheta) {
-            return [
+            let rotX = 0;
+            let largeArc = 0;
+            let sweep = 1;
+
+            let points = [
                 polarPoint(cx, cy, r, theta),
-                polarPoint(cx, cy, r+dr, theta),
-                polarPoint(cx, cy, r+dr, theta+dTheta),
-                polarPoint(cx, cy, r, theta+dTheta)
+                polarPoint(cx, cy, r + dr, theta),
+                polarPoint(cx, cy, r + dr, theta + dTheta),
+                polarPoint(cx, cy, r, theta + dTheta)
             ];
+
+            return ["M ", points[0][0], points[0][1]].join(" ")
+                 + [" L ", points[1][0], points[1][1]].join(" ")
+                 + [" A ", r, r, rotX, largeArc, (sweep-1), points[2][0], points[2][1]].join(" ")
+                 + [" L ", points[3][0], points[3][1]].join(" ")
+                 + [" A ", r, r, rotX, largeArc, sweep, points[0][0], points[0][1]].join(" ")
+
+        }
+
+        function testPolarRect() {
+            for (let r=250; r > 5; r -= 20) {
+                const nRects = 6
+                const increment = 2 * Math.PI / nRects
+
+                for (let i = 0; i < nRects; i++) {
+                    if ( i % 2 === 0) {
+                        growSVG("horloge", "path",
+                            {
+                                "d": polarRect(300, 400, r, 10, i * increment, increment),
+                                "fill": "black"
+                            }
+                            )
+                    }
+                }
+            }
         }
 
 
         // take a [x, y] point and return as "x,y"
-        function pointToAttr (point) {
+        function pointToAttr(point) {
             return point[0] + "," + point[1];
         }
 
         // take and array of points [[x, y] ... ]
         // and as "x,y x2,y2 ..."  (use to set attributes)
-        function pointsToAttr (points) {
+        function pointsToAttr(points) {
             let txt = "";
             for (point of points) {
                 txt += pointToAttr(point) + " ";
@@ -217,13 +253,14 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         }
 
 
+        // Add a child element to another svg element and set attributes
         // id is the id of the parent element to be grown
         // tagName is the name of the SVG 'balise' (ex: circle, polygon...)
         // attributes is an object = {
         //                              "attributeName": "attributeValue"
         //                              ... }
         // see finishSun() for example of use
-        function growSVG (id, tagName, attributes) {
+        function growSVG(id, tagName, attributes) {
             let elem = document.getElementById(id);
             let newItem = document.createElementNS(
                 "http://www.w3.org/2000/svg", tagName);
@@ -272,7 +309,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 </svg>
 
 
-<svg id="horloge" width="600" height="800" viewBox="0 0 200 200">
+<svg id="horloge" width="600" height="800" viewBox="0 0 600 800">
 
 
     <defs>
