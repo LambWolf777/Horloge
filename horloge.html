@@ -5,6 +5,7 @@
 ----------------------------------------------------------------|
 Matthieu Beauchamp-Boulay   |   beaumatt    |       20234205    |
 Zacharie Martel             |   martelza    |       20231059    |
+Émile-Jacob Le Blanc        |   leblanej    |       20188645    |
 Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 -->
 
@@ -35,6 +36,14 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             updateTime();
             getMeteo();
 
+
+            let i = 0
+            setInterval(function () {
+                i++
+                moon_scaling(i/1000)
+            }, 10)
+
+
             setInterval(updateTime, 1000); // every second
             setInterval(getMeteo, 60000); // every minute
         }
@@ -60,7 +69,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         // See https://openweathermap.org/api/one-call-api#example for JSON structure
         function updateMeteo(meteo) {
 
-            moon_phase(meteo["daily"][0]["moon_phase"])
+            moon_scaling(meteo["daily"][0]["moon_phase"])
         }
 
         //////////////////////////////////////////////////////////////////////
@@ -70,7 +79,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         function getMeteo() {
             var url = "https://api.openweathermap.org/data/2.5/onecall?lat=45.5028" +
-                "&lon=-73.608&units=metric&lang=fr&appid=4ea015650a69d241ca53c20cda9f14ea"
+                "&lon=-73.608&units=metric&lang=fr&appid=76351f2ca0795b3bdf3478d89b52b3ff"
 
             var req = new XMLHttpRequest();
             req.onreadystatechange = function () {
@@ -83,6 +92,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             req.open("GET", url, true);
             req.send();
         }
+
 
         function getTime() {
             var now = new Date();
@@ -117,16 +127,16 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         // Il serait peut etre mieux de faire un seul dessin de lune qui s'ajuste ...
         // We could also just set the moon phase to it's closest phase instead of
         //      making 8 presets... but it's inaccurate
-        function moon_phase(moonPhase) {
+        function moon_phase_name(moonPhase) { //Savoir le nom ne sera peut-être pas nécessaire au final
             var moon_name;
-
+            const tolerance = 1;
             if (moonPhase === 0 || moonPhase === 1) {
                 moon_name = 'new moon';
-            } else if (moonPhase == 0.25) {
+            } else if (moonPhase <= 0.25 + tolerance && moonPhase >= 0.25-tolerance) {
                 moon_name = 'first quarter moon';
-            } else if (moonPhase == 0.5) {
+            } else if (moonPhase <= 0.50 + tolerance && moonPhase >= 0.50-tolerance) {
                 moon_name = 'full moon';
-            } else if (moonPhase == 0.75) {
+            } else if (moonPhase <= 0.75 + tolerance && moonPhase >= 0.75-tolerance) {
                 moon_name = 'last quarter moon';
             } else if (moonPhase < 0.25) {
                 moon_name = 'waxing crescent';
@@ -141,7 +151,48 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             // TODO: remove me
             document.getElementById("x-moon_name").innerHTML = moon_name;
             document.getElementById("x-moon_phase").innerHTML = moonPhase;
+        }
 
+
+        //Sets the scaling values to draw the correct moon phase
+        function moon_scaling(moonPhase){
+            moonPhase = Math.abs(moonPhase) % 1;
+
+            const root = document.querySelector(':root');
+            var half_moon_right_scale;
+            var half_moon_left_scale;
+            var hider_scale;
+            
+            if (moonPhase < 0.25) {
+                half_moon_right_scale = 1
+                half_moon_left_scale = 0;
+                hider_scale = 1-4*moonPhase;
+            }
+            else if (moonPhase < 0.5){
+                half_moon_right_scale = 1
+                half_moon_left_scale = 1-4*moonPhase;
+                hider_scale = 0
+            }
+            else if (moonPhase < 0.75){
+                half_moon_right_scale = 3-4*moonPhase;
+                half_moon_left_scale = -1
+                hider_scale = 0
+            }
+            else {
+                half_moon_right_scale = 0
+                half_moon_left_scale = -1
+                hider_scale = 3-4*moonPhase;
+            }
+            root.style.setProperty('--half-moon-right-scale', half_moon_right_scale);
+            root.style.setProperty('--half-moon-left-scale', half_moon_left_scale);
+            root.style.setProperty('--hider-scale', hider_scale);
+
+            //For debugging, may be deleted
+            console.log("half_moon_right_scale value is: " + half_moon_right_scale);
+            console.log("half_moon_left_scale value is: " + half_moon_left_scale);
+            console.log("hider_scale value is: " + hider_scale);
+
+            moon_phase_name(moonPhase);
         }
 
 
@@ -373,21 +424,83 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         <!-- userSpaceOnUse allows for the gradient to spread on groups
          (instead of applying to each element) Since it applies to global viewBox space -->
-        <!--Inconsistent behavior between Firefox and chrome when not specifying cx, cy...-->
+        <!-- Use CSS gradients to get support in FireFox -->
         <radialGradient id="sunGrad" cx="50" cy="50" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stop-color="yellow"/>
             <stop offset="100%" stop-color="orange"/>  <!-- Black for testing/example -->
         </radialGradient>
 
-        <g id="p_sun" transform="translate(-50 -50)" fill="url('#sunGrad')">
-            <circle r="25" cx="50" cy="50"/>
-            <!-- JavaScript completes this -->
+    </defs>
+
+    <g id="p_sun" transform="translate(-50 -50)" fill="url('#sunGrad')">
+        <circle r="25" cx="50" cy="50"/>
+        <!-- JavaScript completes this -->
+    </g>
+</svg>
+
+<svg width="0" height="0" viewbox="50 50 150 150">
+    <!-- Moon phases -->
+    <style>
+        :root {
+            --half-moon-right-scale: 0;
+            --half-moon-left-scale: 0;
+            --hider-scale: 0;
+        }
+
+        .half_circle{
+            transform-origin: 100px;
+        }
+        .moon {
+            fill: white;
+        }
+        .moon_hider {
+            fill: black;
+        }
+
+        #half_moon_right {
+            transform: scaleX( var(--half-moon-right-scale) );
+        }
+        #half_moon_left{
+            transform: scaleX( var(--half-moon-left-scale) );
+        }
+        #hider {
+            transform: scaleX( var(--hider-scale) );
+        }
+
+    </style>
+
+    <defs>
+        <g id="half_circle" class="half_circle">
+            <clipPath id="clipRight">
+                <rect x="100" y="50" width="100" height="100"/>
+            </clipPath>
+            <circle cx="100" cy="100" r="50" clip-path="url(#clipRight)"/>
         </g>
 
+        <filter id="moonSurface" filterUnits="userSpaceOnUse">
+            <feTurbulence baseFrequency="0.1" type="fractalNoise" numOctaves="1" seed="4"/>
+            <feComposite operator="in" in="SourceGraphic"/>
+        </filter>
     </defs>
 
 
+    <g id="moon" transform="translate(-100 -100)">
+        <circle id="fond" cx="100" cy="100" r="52" fill="black" stroke="gray" stroke-width="3" />
+
+        <g id="moon_mask">
+                <use href="#half_circle" id="half_moon_right" class="half_circle moon"/>
+                <use href="#half_circle" id="half_moon_left" class="half_circle moon" />
+        </g>
+
+        <g>
+        <circle id="fond" cx="100" cy="100" r="52"
+                filter="url(#moonSurface)" stroke-width="3" />
+        </g>
+        <use href="#half_circle" id="hider" class="half_circle moon_hider"
+             stroke="black" stroke-width="1" />
+    </g>
 </svg>
+
 
 
 <svg id="horloge" width="100%" height="100%" viewBox="0 0 1000 1000">
@@ -440,6 +553,8 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         <!-- Need to create a scaled instance before setting a position ... (If I need to scale that is)-->
         <use xlink:href="#p_sun" transform="scale(2)" id="big_sun"/>
 
+        
+
     </defs>
 
     <!-- Canvas Box -->
@@ -449,8 +564,12 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
     <!-- Finally, I can position correctly with it's center -->
     <use href="#big_sun" x="100" y="100"/>
 
+    <use href="#moon" x="500" y="700"/>
+
+
 
 </svg>
+
 
 <ul>
     <li>L´année: <span id="x-an"></span></li>
