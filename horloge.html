@@ -25,7 +25,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         function init() {
             initPrimitives();
-            
+
             // TODO move this out
             genCadran(24, 500, 500, 400, 50, "h", "time")
             genCadran(60, 500, 500, 370, 30, "m", "time")
@@ -297,7 +297,8 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                 "path",
                 {
                     "d": roundedRect(500, 500, 300, 200, 30),
-                    "fill": "aqua"
+                    "fill": "aqua",
+                    // "style": "animation: glowBlue 1s linear infinite"
                 }
             )
         }
@@ -565,7 +566,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         }
 
         .time_cell {
-            fill: lightgrey;
+            fill: gray;
             stroke: black;
             stroke-width: 2px;
         }
@@ -597,6 +598,8 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
     <!-- Finally, I can position correctly with it's center -->
 <!--    <use href="#big_sun" x="100" y="100"/>-->
+
+    <circle cx="500" cy="500" r="400" fill="black"/>
 
     <use href="#moon" x="500" y="750"/>
 
