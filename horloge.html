@@ -26,10 +26,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         function init() {
             initPrimitives();
 
-            // TODO move this out
-            genCadran(24, 500, 500, 400, 50, "h", "time")
-            genCadran(60, 500, 500, 370, 30, "m", "time")
-            genCadran(60, 500, 500, 350, 20, "s", "time", false) // Not sure I like having the seconds in text
+            makeClock();    // makes the hours/minutes/seconds
 
 
             updateTime();
@@ -45,8 +42,9 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             }, 10)
 
 
-            setInterval(updateTime, 1000); // every second
-            setInterval(getMeteo, 1000 * 60 * 60); // every hour
+            setInterval(updateTime, 1000);          // every second
+            setInterval(getMsg, 1000);              // every second
+            setInterval(getMeteo, 1000 * 60 * 60);  // every hour
         }
 
         function initPrimitives() {
@@ -73,6 +71,12 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
 
             moon_scaling(meteo["daily"][0]["moon_phase"])
+        }
+
+
+        // called by getMsg when we receive response
+        function updateMsg(msgJSON) {
+            // do stuff
         }
 
         //////////////////////////////////////////////////////////////////////
@@ -140,6 +144,23 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
             return weather
 
+        }
+
+
+        function getMsg() {
+            var url = "http://www.iro.umontreal.ca/~roys/ift1005/calendrier/test.php?" +
+                "cal=now%2C%2B30sec%2Cbonjour%0D%0A%2B2min%2C%2B5min%2Csalut%2C%21%0D%0A%2B1hour%2C%2B30sec%2Callo%0D%0A"
+
+            var req = new XMLHttpRequest();
+            req.onreadystatechange = function () {
+                if (this.readyState === 4 && this.status === 200) {
+                    var messages = JSON.parse(this.responseText);
+
+                    updateMsg(messages);
+                }
+            };
+            req.open("GET", url, true);
+            req.send();
         }
 
         //////////////////////////////////////////////////////////////////////
@@ -271,6 +292,13 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         }
 
 
+        function makeClock() {
+            genCadran(24, 500, 500, 400, 50, "h", "time")
+            genCadran(60, 500, 500, 370, 30, "m", "time")
+            genCadran(60, 500, 500, 350, 20, "s", "time", false) // Not sure if I like having the seconds in text
+        }
+
+
         // TODO: document this,
         // We might want to split this up since this is very specific for
         // making the hours and minutes cells... <br>
@@ -331,6 +359,24 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         // Utils /////////////////////////////////////////////////////////////
 
+
+        // We may prefer to compare epoch times directly
+        function timeFromEpoch(seconds) {
+            let date = new Date(seconds * 1000)
+            return {
+                "h": date.getHours(),
+                "m": date.getMinutes(),
+                "s": date.getSeconds()
+            }
+        }
+
+
+        function getEpoch() {
+            return Date.now()/1000
+        }
+
+
+        // Used to get previous hour / minute / second
         function getPrevious (value, maxVal) {
             if (value === 0) {
                 return maxVal;
