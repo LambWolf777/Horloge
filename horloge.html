@@ -69,6 +69,8 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         // where meteo is the complete JSON data.
         // See https://openweathermap.org/api/one-call-api#example for JSON structure
         function updateMeteo(meteo) {
+            let hourWeather = getMeteoArray(meteo)
+
 
             moon_scaling(meteo["daily"][0]["moon_phase"])
         }
@@ -80,7 +82,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         function getMeteo() {
             var url = "https://api.openweathermap.org/data/2.5/onecall?lat=45.5028" +
-                "&lon=-73.608&units=metric&lang=fr&appid=1eaf15e7cee034f3f9e265ccb4b57d4e"
+                "&lon=-73.608&units=metric&lang=en&appid=1eaf15e7cee034f3f9e265ccb4b57d4e"
 
             var req = new XMLHttpRequest();
             req.onreadystatechange = function () {
@@ -118,6 +120,26 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             }
 
             return time
+        }
+
+
+        // return an array indicating the predictions by hours starting at 0h to 23h
+        // Possible values in the returned array: https://openweathermap.org/weather-conditions#Weather-Condition-Codes-2
+        //      - Clouds
+        //      -
+        //
+        //  Should we check the precise description..?
+        function getMeteoArray(meteoJSON) {
+            let weather = [];
+
+            let hourly = meteoJSON["hourly"];
+
+            for (let h=0; h<24; ++h) {
+                weather.push(hourly[h]["weather"][0]["main"])
+            }
+
+            return weather
+
         }
 
         //////////////////////////////////////////////////////////////////////
