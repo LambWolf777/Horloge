@@ -25,12 +25,11 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         function init() {
             initPrimitives();
-
-            // testPolarRect()
+            
             // TODO move this out
             genCadran(24, 500, 500, 400, 50, "h", "time")
             genCadran(60, 500, 500, 370, 30, "m", "time")
-            genCadran(60, 500, 500, 350, 20, "s", "time", true) // Not sure I like having the seconds in text
+            genCadran(60, 500, 500, 350, 20, "s", "time", false) // Not sure I like having the seconds in text
 
 
             updateTime();
@@ -47,7 +46,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
 
             setInterval(updateTime, 1000); // every second
-            setInterval(getMeteo, 60000); // every minute
+            setInterval(getMeteo, 1000 * 60 * 60); // every hour
         }
 
         function initPrimitives() {
@@ -81,7 +80,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         function getMeteo() {
             var url = "https://api.openweathermap.org/data/2.5/onecall?lat=45.5028" +
-                "&lon=-73.608&units=metric&lang=fr&appid=76351f2ca0795b3bdf3478d89b52b3ff"
+                "&lon=-73.608&units=metric&lang=fr&appid=1eaf15e7cee034f3f9e265ccb4b57d4e"
 
             var req = new XMLHttpRequest();
             req.onreadystatechange = function () {
@@ -164,7 +163,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             var half_moon_right_scale;
             var half_moon_left_scale;
             var hider_scale;
-            
+
             if (moonPhase < 0.25) {
                 half_moon_right_scale = 1
                 half_moon_left_scale = 0;
@@ -190,9 +189,9 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             root.style.setProperty('--hider-scale', hider_scale);
 
             //For debugging, may be deleted
-            console.log("half_moon_right_scale value is: " + half_moon_right_scale);
-            console.log("half_moon_left_scale value is: " + half_moon_left_scale);
-            console.log("hider_scale value is: " + hider_scale);
+            // console.log("half_moon_right_scale value is: " + half_moon_right_scale);
+            // console.log("half_moon_left_scale value is: " + half_moon_left_scale);
+            // console.log("hider_scale value is: " + hider_scale);
 
             moon_phase_name(moonPhase);
         }
@@ -291,7 +290,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             }
         }
 
-        
+
         function genMsgBoard() {
             growSVG(
                 "horloge",
@@ -373,7 +372,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             }
         }
 
-        
+
         // Returns a string of path data
         // cx, cy are the center coordinates of the rect
         function roundedRect(cx, cy, width, height, borderRadius) {
@@ -396,7 +395,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                         + " Q " + left + " " + top + ", " + (left + borderRadius) + " " + top
         }
 
-        
+
         // take a [x, y] point and return as "x,y"
         function pointToAttr(point) {
             return point[0] + "," + point[1];
@@ -588,18 +587,18 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         <!-- Need to create a scaled instance before setting a position ... (If I need to scale that is)-->
         <use xlink:href="#p_sun" transform="scale(2)" id="big_sun"/>
 
-        
+
 
     </defs>
 
     <!-- Canvas Box -->
-    <rect x="1" y="0" width="198" height="200" fill="none" stroke="black" stroke-width="1"/>
+<!--    <rect x="1" y="0" width="198" height="200" fill="none" stroke="black" stroke-width="1"/>-->
 
 
     <!-- Finally, I can position correctly with it's center -->
-    <use href="#big_sun" x="100" y="100"/>
+<!--    <use href="#big_sun" x="100" y="100"/>-->
 
-    <use href="#moon" x="500" y="700"/>
+    <use href="#moon" x="500" y="750"/>
 
 
 
