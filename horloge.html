@@ -36,6 +36,8 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             updateTime();
             getMeteo();
 
+            genMsgBoard();
+
 
             let i = 0
             setInterval(function () {
@@ -289,7 +291,17 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             }
         }
 
-
+        
+        function genMsgBoard() {
+            growSVG(
+                "horloge",
+                "path",
+                {
+                    "d": roundedRect(500, 500, 300, 200, 30),
+                    "fill": "aqua"
+                }
+            )
+        }
 
 
         //////////////////////////////////////////////////////////////////////
@@ -361,7 +373,30 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             }
         }
 
+        
+        // Returns a string of path data
+        // cx, cy are the center coordinates of the rect
+        function roundedRect(cx, cy, width, height, borderRadius) {
+            let top = cy - height/2;
+            let bot = cy + height/2;
+            let left = cx - width/2;
+            let right = cx + width/2;
 
+            return         "M " + cx + " " + top
+                        + " L " + (right - borderRadius) + " " + top
+                        + " Q " + right + " " + top + ", " + right + " " + (top + borderRadius)
+
+                        + " L " + right + " " + (bot - borderRadius)
+                        + " Q " + right + " " + bot + ", " + (right - borderRadius) + " " + bot
+
+                        + " L " + (left + borderRadius) + " " + bot
+                        + " Q " + left + " " + bot + ", " + left + " " + (bot - borderRadius)
+
+                        + " L " + left + " " + (top + borderRadius)
+                        + " Q " + left + " " + top + ", " + (left + borderRadius) + " " + top
+        }
+
+        
         // take a [x, y] point and return as "x,y"
         function pointToAttr(point) {
             return point[0] + "," + point[1];
