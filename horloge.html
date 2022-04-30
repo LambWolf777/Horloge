@@ -588,7 +588,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         <!-- Javascript generated -->
     </g>
 
-
 </svg>
 
 
@@ -707,8 +706,15 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         <!-- Need to create a scaled instance before setting a position ... (If I need to scale that is)-->
         <use xlink:href="#p_sun" transform="scale(2)" id="big_sun"/>
 
+        <use href="#p_droplet" transform="scale(0.4)" id="drop"/>
 
 
+        <!-- This could be animated by making them fall at different speeds ( y = ( y + speed ) % 100 ) -->
+        <g id="rain" transform="translate(-50 -50)">
+            <use href="#drop" x="25" y="25"/>
+            <use href="#drop" x="50" y="50"/>
+            <use href="#drop" x="75" y="25"/>
+        </g>
     </defs>
 
     <!-- Canvas Box -->
@@ -717,7 +723,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
     <!-- Finally, I can position correctly with it's center -->
 <!--    <use href="#big_sun" x="100" y="100"/>-->
-    <use href="#p_droplet" x="50" y="70"/>
+    <use href="#rain" x="50" y="70"/>
 
     <circle cx="500" cy="500" r="400" fill="black"/>
 
