@@ -49,6 +49,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         function initPrimitives() {
             finishSun();
+            finishDroplet();
         }
 
         //////////////////////////////////////////////////////////////////////
@@ -292,6 +293,35 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         }
 
 
+        function finishDroplet() {
+            let p = polarPoint(50, 70, 30, Math.PI/6)
+
+            growSVG("p_droplet",
+                    "path",
+                    {
+                        "d": "M 50 100"
+                            + arcPath(50, 70, 30, - 7* Math.PI/6)
+                            + " Q 50 20 50 0"
+
+                            + " Q 50 20 " + p[0] + " " + p[1]
+                            + arcPath(50, 70, 30, - Math.PI/2),
+                    }
+            )
+
+            growSVG("p_droplet",
+                    "path",
+                    {
+                        "d": polarRect(50, 70, 20, 5, Math.PI, -Math.PI/6),
+                        "fill": "white",
+                        "opacity": 0.85
+                    }
+            )
+
+
+
+        }
+
+
         function makeClock() {
             genCadran(24, 500, 500, 400, 50, "h", "time")
             genCadran(60, 500, 500, 370, 30, "m", "time")
@@ -405,8 +435,8 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         function polarRect(cx, cy, r, dr, theta, dTheta) {
             let rotX = 0;
             let largeArc = 0;
-            let posSweep = 1;
-            let negSweep = 0;
+            let posSweep = Number(dTheta < 0);
+            let negSweep = Number(! posSweep);
 
             let points = [
                 polarPoint(cx, cy, r, theta),
@@ -422,6 +452,19 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                  + [" A ", r, r, rotX, largeArc, negSweep, points[0][0], points[0][1]].join(" ");
 
         }
+
+        // Return the path data for an arc, angles are in radians
+        function arcPath (cx, cy, r, dTheta) {
+            let rotX = 0;
+            let largeArc = 0;
+            let sweep = Number(dTheta < 0);
+
+            let p1 = polarPoint(cx, cy, r)
+            let p2 = polarPoint(cx, cy, r, dTheta)
+
+            return [" A", r, r, rotX, largeArc, sweep, p2[0], p2[1] ].join(" ")
+        }
+
 
         function testPolarRect() {
             for (let r=250; r > 5; r -= 20) {
@@ -530,7 +573,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         <!-- Use CSS gradients to get support in FireFox -->
         <radialGradient id="sunGrad" cx="50" cy="50" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stop-color="yellow"/>
-            <stop offset="100%" stop-color="orange"/>  <!-- Black for testing/example -->
+            <stop offset="100%" stop-color="orange"/>
         </radialGradient>
 
     </defs>
@@ -539,7 +582,15 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         <circle r="25" cx="50" cy="50"/>
         <!-- JavaScript completes this -->
     </g>
+
+
+    <g id="p_droplet" transform="translate(-50 -50)" fill="blue">
+        <!-- Javascript generated -->
+    </g>
+
+
 </svg>
+
 
 <svg width="0" height="0" viewbox="50 50 150 150">
     <!-- Moon phases -->
@@ -666,6 +717,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
     <!-- Finally, I can position correctly with it's center -->
 <!--    <use href="#big_sun" x="100" y="100"/>-->
+    <use href="#p_droplet" x="50" y="70"/>
 
     <circle cx="500" cy="500" r="400" fill="black"/>
 
