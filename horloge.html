@@ -32,8 +32,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             updateTime();
             getMeteo();
 
-            genMsgBoard();
-
 
             let i = 0
             setInterval(function () {
@@ -49,7 +47,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         function initPrimitives() {
             finishSun();
-            finishDroplet();
         }
 
         //////////////////////////////////////////////////////////////////////
@@ -293,35 +290,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         }
 
 
-        function finishDroplet() {
-            let p = polarPoint(50, 70, 30, Math.PI/6)
-
-            growSVG("p_droplet",
-                    "path",
-                    {
-                        "d": "M 50 100"
-                            + arcPath(50, 70, 30, - 7* Math.PI/6)
-                            + " Q 50 20 50 0"
-
-                            + " Q 50 20 " + p[0] + " " + p[1]
-                            + arcPath(50, 70, 30, - Math.PI/2),
-                    }
-            )
-
-            growSVG("p_droplet",
-                    "path",
-                    {
-                        "d": polarRect(50, 70, 20, 5, Math.PI, -Math.PI/6),
-                        "fill": "white",
-                        "opacity": 0.85
-                    }
-            )
-
-
-
-        }
-
-
         function makeClock() {
             genCadran(24, 500, 500, 400, 50, "h", "time")
             genCadran(60, 500, 500, 370, 30, "m", "time")
@@ -370,18 +338,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             }
         }
 
-
-        function genMsgBoard() {
-            growSVG(
-                "horloge",
-                "path",
-                {
-                    "d": roundedRect(500, 500, 300, 200, 30),
-                    "fill": "aqua",
-                    // "style": "animation: glowBlue 1s linear infinite"
-                }
-            )
-        }
 
 
         //////////////////////////////////////////////////////////////////////
@@ -435,8 +391,8 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         function polarRect(cx, cy, r, dr, theta, dTheta) {
             let rotX = 0;
             let largeArc = 0;
-            let posSweep = Number(dTheta < 0);
-            let negSweep = Number(! posSweep);
+            let posSweep = 1;
+            let negSweep = 0;
 
             let points = [
                 polarPoint(cx, cy, r, theta),
@@ -452,19 +408,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                  + [" A ", r, r, rotX, largeArc, negSweep, points[0][0], points[0][1]].join(" ");
 
         }
-
-        // Return the path data for an arc, angles are in radians
-        function arcPath (cx, cy, r, dTheta) {
-            let rotX = 0;
-            let largeArc = 0;
-            let sweep = Number(dTheta < 0);
-
-            let p1 = polarPoint(cx, cy, r)
-            let p2 = polarPoint(cx, cy, r, dTheta)
-
-            return [" A", r, r, rotX, largeArc, sweep, p2[0], p2[1] ].join(" ")
-        }
-
 
         function testPolarRect() {
             for (let r=250; r > 5; r -= 20) {
@@ -485,27 +428,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         }
 
 
-        // Returns a string of path data
-        // cx, cy are the center coordinates of the rect
-        function roundedRect(cx, cy, width, height, borderRadius) {
-            let top = cy - height/2;
-            let bot = cy + height/2;
-            let left = cx - width/2;
-            let right = cx + width/2;
-
-            return         "M " + cx + " " + top
-                        + " L " + (right - borderRadius) + " " + top
-                        + " Q " + right + " " + top + ", " + right + " " + (top + borderRadius)
-
-                        + " L " + right + " " + (bot - borderRadius)
-                        + " Q " + right + " " + bot + ", " + (right - borderRadius) + " " + bot
-
-                        + " L " + (left + borderRadius) + " " + bot
-                        + " Q " + left + " " + bot + ", " + left + " " + (bot - borderRadius)
-
-                        + " L " + left + " " + (top + borderRadius)
-                        + " Q " + left + " " + top + ", " + (left + borderRadius) + " " + top
-        }
 
 
         // take a [x, y] point and return as "x,y"
@@ -573,7 +495,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         <!-- Use CSS gradients to get support in FireFox -->
         <radialGradient id="sunGrad" cx="50" cy="50" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stop-color="yellow"/>
-            <stop offset="100%" stop-color="orange"/>
+            <stop offset="100%" stop-color="orange"/>  <!-- Black for testing/example -->
         </radialGradient>
 
     </defs>
@@ -582,14 +504,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         <circle r="25" cx="50" cy="50"/>
         <!-- JavaScript completes this -->
     </g>
-
-
-    <g id="p_droplet" transform="translate(-50 -50)" fill="blue">
-        <!-- Javascript generated -->
-    </g>
-
 </svg>
-
 
 <svg width="0" height="0" viewbox="50 50 150 150">
     <!-- Moon phases -->
@@ -696,6 +611,10 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             100% { fill: aqua }
         }
 
+        .inMessageWindow {
+            clip-path: url(#messageWindowClip);
+        }
+
 
     </style>
 
@@ -704,17 +623,10 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         <!-- example of use -->
         <!-- Need to create a scaled instance before setting a position ... (If I need to scale that is)-->
-        <use id="big_sun" xlink:href="#p_sun" transform="scale(2)"/>
-
-        <use id="drop" href="#p_droplet" transform="scale(0.4)"/>
+        <use xlink:href="#p_sun" transform="scale(2)" id="big_sun"/>
 
 
-        <!-- This could be animated by making them fall at different speeds ( y = ( y + speed ) % 100 ) -->
-        <g id="rain" transform="translate(-50 -50)">
-            <use href="#drop" x="25" y="25"/>
-            <use href="#drop" x="50" y="50"/>
-            <use href="#drop" x="75" y="25"/>
-        </g>
+
     </defs>
 
     <!-- Canvas Box -->
@@ -723,12 +635,16 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
     <!-- Finally, I can position correctly with it's center -->
 <!--    <use href="#big_sun" x="100" y="100"/>-->
-    <use href="#rain" x="50" y="70"/>
 
     <circle cx="500" cy="500" r="400" fill="black"/>
 
     <use href="#moon" x="500" y="750"/>
 
+    <rect id="messageWindow" x="350" y="400" width="300" height="200" rx="25" fill="aqua" style="animation: glowBlue 4s ease infinite" /> 
+    <clipPath id="messageWindowClip">
+        <use href="#messageWindow" /> 
+    </clipPath>
+    <!-- Was used to test clip: <rect x="300" y="475" width="200" height="150" rx="25" fill="green" class="inMessageWindow"  /> -->
 
 
 </svg>
