@@ -549,6 +549,15 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         <!-- Javascript generated -->
     </g>
 
+    <g id="clouds" width="600" height="800" viewBox="0 0 200 200">
+        <path fill="gray" d="M 45 150 h 125 a 20 20 1 0 0 0 -40 a 30 20 1 0 0 -45 -10 a 20 35 1 0 0 -25 10 a 25 30 1 0 0 -25 10 a 15 10 1 0 0 -30 30" stroke="black"/>
+        <path transform="scale(-1, 1) translate(-200, 0)" fill="darkgray" d="M 45 150 h 125 a 20 20 1 0 0 0 -40 a 30 20 1 0 0 -45 -10 a 20 35 1 0 0 -25 10 a 25 30 1 0 0 -25 10 a 15 10 1 0 0 -30 30" stroke="black"/>
+    </g>
+
+    <g id="lightning">
+        <path fill="yellow" stroke="black" d="M 125 20 l -10 30 l 8 5 l -12 28 l 22 -33 l -11 -4 l 12 -26"/>
+    </g>
+
 </svg>
 
 <svg width="0" height="0" viewbox="50 50 150 150">
@@ -679,6 +688,37 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             <use href="#drop" x="75" y="25"/>
         </g>
 
+        <g id="rainfall" transform="translate(-50 -10)">
+            <use href="#drop" x="90" y="25">
+                <animate attributeName="y" values="25;75" dur="1s" repeatCount="indefinite"/>
+            </use>
+            <use href="#drop" x="115" y="50">
+                <animate attributeName="y" values="50;100" dur="1s" repeatCount="indefinite"/>
+            </use>
+            <use href="#drop" x="140" y="25">
+                <animate attributeName="y" values="25;75" dur="1s" repeatCount="indefinite"/>
+            </use>
+            <use href="#clouds" x="40" y="-120">
+            </use>
+        </g>
+
+        <g id="thunderstorm" transform="translate(-50 -10)">
+            <use href="#drop" x="90" y="25">
+                <animate attributeName="y" values="25;75" dur="1s" repeatCount="indefinite"/>
+            </use>
+            <use href="#drop" x="115" y="50">
+                <animate attributeName="y" values="50;100" dur="1s" repeatCount="indefinite"/>
+            </use>
+            <use href="#drop" x="140" y="25">
+                <animate attributeName="y" values="25;75" dur="1s" repeatCount="indefinite"/>
+            </use>
+            <use href="#clouds" x="40" y="-120">
+            </use>
+            <use href="#lightning" x="50" y="10">
+                <animate attributeName="opacity" values="0.50;1;0.5" dur="2s" repeatCount="indefinite"/>
+            </use>
+        </g>
+
     </defs>
 
     <!-- Canvas Box -->
@@ -687,9 +727,10 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
     <!-- Finally, I can position correctly with it's center -->
 <!--    <use href="#big_sun" x="100" y="100"/>-->
-    <use href="#rain" x="50" y="70"/>
+    <use href="#thunderstorm" x="50" y="70"/>
 
     <circle cx="500" cy="500" r="400" fill="black"/>
+
 
     <use href="#moon" x="500" y="750"/>
 
@@ -701,21 +742,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
 
 </svg>
-
-
-<ul>
-    <li>L´année: <span id="x-an"></span></li>
-    <li>Mois: <span id="x-mois"></span></li>
-    <li>Jour: <span id="x-jour"></span></li>
-    <li>Heure: <span id="x-h"></span></li>
-    <li>Minute: <span id="x-m"></span></li>
-    <li>Seconde: <span id="x-s"></span></li>
-</ul>
-
-<ul>
-    <li>Phase de la lune: <span id="x-moon_phase"></span></li>
-    <li>Nom de la phase: <span id="x-moon_name"></span></li>
-</ul>
 
 </body>
 
