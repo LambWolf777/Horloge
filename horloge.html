@@ -264,14 +264,16 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             if (displayingWeather){
                 //make weather stuff 'display: none;'' or a fancier animation if we'd like
                 //make sunrise stuff display
+
                 document.getElementById("sun_R_S").setAttribute("display", "none")
 
             }
             else{
-
-                document.getElementById("sun_R_S").setAttribute("display", "default")
                 //make sunset/sunrise stuff 'display: none;'' or a fancier animation if we'd like
                 //make weather stuff display
+
+                document.getElementById("sun_R_S").setAttribute("display", "default")
+
             }
         }
 
@@ -289,13 +291,34 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             })
 
             growSVG("sun_R_S", "path", {
-                "d": polarRect(500, 500, 400, 100, Math.PI / 2 - sunrise * increment, -increment),
-                "fill": "red"
+                "d": polarRect(500, 500, 400, 100, Math.PI/2 - sunrise*increment, -increment),
+                "fill": "rgb(225,100,156)",
+                "stroke": "black",
+                "stroke-width": "2"
             })
 
+            let pointRise = polarPoint(500, 500, 450, Math.PI/2 - sunrise*increment - increment/2)
+            growSVG("sun_R_S", "use", {
+                "href": "#p_sun",
+                "x": pointRise[0],
+                "y": pointRise[1]
+            })
+
+
+
             growSVG("sun_R_S", "path", {
-                "d": polarRect(500, 500, 400, 100, Math.PI / 2 - sunset * increment, -increment),
-                "fill": "blue"
+                "d": polarRect(500, 500, 400, 100, Math.PI/2 - sunset*increment, -increment),
+                "fill": "url(#starry)",
+                "stroke": "black",
+                "stroke-width": "2",
+
+            })
+
+            let pointSet = polarPoint(500, 500, 450, Math.PI/2 - sunset*increment  - increment/2 )
+            growSVG("sun_R_S", "use", {
+                "href": "#sunset",
+                "x": pointSet[0],
+                "y": pointSet[1]
             })
         }
 
@@ -582,6 +605,11 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             <stop offset="100%" stop-color="orange"/>
         </radialGradient>
 
+        <radialGradient id="starGrad" cx="50" cy="50" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="rgb(118, 230, 236)"/>
+            <stop offset="100%" stop-color="white"/>
+        </radialGradient>
+
     </defs>
 
     <g id="p_sun" transform="translate(-50 -50)" fill="url('#sunGrad')">
@@ -621,6 +649,19 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
               l 22 -33
               l -11 -4
               l 12 -26"/>
+    </g>
+
+
+    <g id="p_star" transform="translate(-50 -50)" fill="url('#starGrad')">
+        <path d="M 50 0
+                 L 60 40
+                 L 100 50
+                 L 60 60
+                 L 50 100
+                 L 40 60
+                 L 0 50
+                 L 40 40
+                 Z"/>
     </g>
 
 </svg>
@@ -763,13 +804,13 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         <g id="rainfall" transform="translate(-50 -10)">
             <use href="#drop" x="90" y="25">
-                <animate attributeName="y" values="25;100" dur="1.25s" repeatCount="indefinite"/>
-            </use>
-            <use href="#drop" x="115" y="25">
                 <animate attributeName="y" values="25;100" dur="1s" repeatCount="indefinite"/>
             </use>
+            <use href="#drop" x="115" y="25">
+                <animate attributeName="y" values="25;100" dur="0.75s" repeatCount="indefinite"/>
+            </use>
             <use href="#drop" x="140" y="25">
-                <animate attributeName="y" values="25;100" dur="1.5s" repeatCount="indefinite"/>
+                <animate attributeName="y" values="25;100" dur="1.25s" repeatCount="indefinite"/>
             </use>
 
             <use href="#p_clouds" x="40" y="-120"/>
@@ -783,6 +824,19 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                          dur="2s" calcMode="discrete" repeatCount="indefinite"/>
             </use>
         </g>
+
+
+        <use id="smallStar" href="#p_star" transform="scale(0.1)"/>
+        <use id="smallMoon" href="#moon" transform="scale(0.5)"/>
+        <g id="sunset" transform="translate(-50 -50)">
+            <use href="#smallMoon" x="50" y="50"/>
+        </g>
+
+        <pattern id="starry" viewBox="0 0 12 12" width="10%" height="10%">
+            <rect x="0" y="0" width="12" height="12" fill="rgba(22,34,77,1)" stroke="rgba(22,34,77,1)"/>
+            <use href="#smallStar" x="6" y="6"/>
+        </pattern>
+
 
     </defs>
 
