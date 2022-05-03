@@ -67,7 +67,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         function updateMeteo(meteo) {
             let hourWeather = getMeteoArray(meteo)
 
-
+            setSun_R_S(meteo)
             moon_scaling(meteo["daily"][0]["moon_phase"])
         }
 
@@ -137,7 +137,17 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             }
 
             return weather
+        }
 
+
+        function getSun_R_S(meteoJSON) {
+            let sunrise = meteoJSON["current"]["sunrise"]
+            let sunset = meteoJSON["current"]["sunset"]
+
+            return {
+                "sunrise": timeFromEpoch(sunrise),
+                "sunset": timeFromEpoch(sunset)
+            }
         }
 
 
@@ -185,10 +195,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             } else {
                 moon_name = 'waning crescent';
             }
-
-            // TODO: remove me
-            document.getElementById("x-moon_name").innerHTML = moon_name;
-            document.getElementById("x-moon_phase").innerHTML = moonPhase;
         }
 
 
@@ -251,17 +257,46 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         }
 
 
-        var diplayingWeather = true; //set false to display sunrise/sunset by default instead
+        var displayingWeather = true; //set false to display sunrise/sunset by default instead
         function switchDisplay(){
+
             displayingWeather = !displayingWeather;
             if (displayingWeather){
                 //make weather stuff 'display: none;'' or a fancier animation if we'd like
                 //make sunrise stuff display
+                document.getElementById("sun_R_S").setAttribute("display", "none")
+
             }
             else{
+
+                document.getElementById("sun_R_S").setAttribute("display", "default")
                 //make sunset/sunrise stuff 'display: none;'' or a fancier animation if we'd like
                 //make weather stuff display
             }
+        }
+
+        function setSun_R_S (meteoJSON) {
+            let info = getSun_R_S(meteoJSON)
+
+            let sunrise = info["sunrise"]["h"]
+            let sunset = info["sunset"]["h"]
+
+            let increment = 2 * Math.PI / 24
+
+            growSVG("horloge", "g", {
+                "id": "sun_R_S",
+                "display": "none"   // Hidden on load
+            })
+
+            growSVG("sun_R_S", "path", {
+                "d": polarRect(500, 500, 400, 100, Math.PI / 2 - sunrise * increment, -increment),
+                "fill": "red"
+            })
+
+            growSVG("sun_R_S", "path", {
+                "d": polarRect(500, 500, 400, 100, Math.PI / 2 - sunset * increment, -increment),
+                "fill": "blue"
+            })
         }
 
         //////////////////////////////////////////////////////////////////////
@@ -328,9 +363,9 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         }
 
         function makeClock() {
-            genCadran(24, 500, 500, 400, 50, "h", "time")
-            genCadran(60, 500, 500, 370, 30, "m", "time")
-            genCadran(60, 500, 500, 350, 20, "s", "time", false) // Not sure if I like having the seconds in text
+            genCadran(24, 500, 500, 350, 50, "h", "time")
+            genCadran(60, 500, 500, 320, 30, "m", "time")
+            genCadran(60, 500, 500, 300, 20, "s", "time", false) // Not sure if I like having the seconds in text
         }
 
 
@@ -762,7 +797,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
     <circle cx="500" cy="500" r="400" fill="black"/>
 
 
-    <use href="#moon" x="500" y="750"/>
+    <use href="#moon" x="500" y="700"/>
 
     <rect id="messageWindow" x="350" y="400" width="300" height="200" rx="25" fill="aqua" style="animation: glowBlue 4s ease infinite" />
     <clipPath id="messageWindowClip">
@@ -770,7 +805,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
     </clipPath>
     <!-- Was used to test clip: <rect x="300" y="475" width="200" height="150" rx="25" fill="green" class="inMessageWindow"  /> -->
 
-    <circle id="button" onclick="switchDisplay()" cx="665" cy="285" r="30"  stroke="hsl(0, 0%, 22%)" stroke-width="3"/>
+    <circle id="button" onclick="switchDisplay()" cx="625" cy="300" r="30"  stroke="hsl(0, 0%, 22%)" stroke-width="3"/>
 
 
 </svg>
