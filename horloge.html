@@ -20,7 +20,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
     <script>
         window.onload = init;
 
-
         // Initializers //////////////////////////////////////////////////////
 
         function init() {
@@ -117,10 +116,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                 "s": now.getSeconds()
             }
 
-            // 'testing'
-            for (const [key, value] of Object.entries(time)) {
-                document.getElementById("x-" + key).innerHTML = value;
-            }
 
             return time
         }
@@ -509,6 +504,19 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             return newItem;
         }
 
+        var diplayingWeather = true; //set false to display sunrise/sunset by default instead
+        function switchDisplay(){
+            displayingWeather = !displayingWeather;
+            if (displayingWeather){
+                //make weather stuff 'display: none;'' or a fancier animation if we'd like
+                //make sunrise stuff display
+            }
+            else{
+                //make sunset/sunrise stuff 'display: none;'' or a fancier animation if we'd like
+                //make weather stuff display
+            }
+        }
+
 
         //////////////////////////////////////////////////////////////////////
 
@@ -559,6 +567,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
     </g>
 
 </svg>
+
 
 <svg width="0" height="0" viewbox="50 50 150 150">
     <!-- Moon phases -->
@@ -669,6 +678,13 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             clip-path: url(#messageWindowClip);
         }
 
+        #button {
+            fill: red;
+        }
+
+        #button:active {
+            fill:rgb(119, 0, 0);
+        }
 
     </style>
 
@@ -739,6 +755,8 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         <use href="#messageWindow" /> 
     </clipPath>
     <!-- Was used to test clip: <rect x="300" y="475" width="200" height="150" rx="25" fill="green" class="inMessageWindow"  /> -->
+
+    <circle id="button" onclick="switchDisplay()" cx="665" cy="285" r="30"  stroke="hsl(0, 0%, 22%)" stroke-width="3"/>
 
 
 </svg>
