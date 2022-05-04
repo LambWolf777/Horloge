@@ -911,8 +911,13 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         </pattern>
 
         <use id="darkCloud" href="#p_cloud" transform="scale(-0.8, 1)" fill="rgb(100, 100, 100)"/>
+        <use id="lightCloud2" href="#p_cloud" transform="scale(-0.8, 1)" fill="lightgray"/>
         <use id="lightCloud" href="#p_cloud" transform="scale(0.8, 1)" fill="lightgray"/>
 
+        <g id="rainClouds" transform="translate(-50 -50)">
+            <use href="#lightCloud" x="60" y="50"/>
+            <use href="#darkCloud" x="40" y="55"/>
+        </g>
 
         <!-- Meteo prediction drawables should all fit in a 100x100 box and to be placed by their centers -->
         <g id="Clear">
@@ -921,7 +926,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         <g id="Clouds" transform="translate(-50 -50)">
             <use href="#lightCloud" x="60" y="50"/>
-            <use href="#darkCloud" x="40" y="55"/>
+            <use href="#lightCloud2" x="40" y="55"/>
         </g>
 
         <g id="Rain" transform="translate(-50 -50)">
@@ -935,7 +940,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                 <animate attributeName="y" values="20;80" dur="0.75s" repeatCount="indefinite"/>
             </use>
 
-            <use href="#Clouds" x="50" y="50"/>
+            <use href="#rainClouds" x="50" y="50"/>
         </g>
 
         <g id="Drizzle" transform="translate(-50 -50)">
@@ -949,7 +954,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                 <animate attributeName="y" values="20;80" dur="0.75s" repeatCount="indefinite"/>
             </use>
 
-            <use href="#Clouds" x="50" y="50"/>
+            <use href="#rainClouds" x="50" y="50"/>
         </g>
 
         <g id="Thunderstorm">
@@ -994,6 +999,8 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
     <rect x="0" y="200" width="100" height="100"/>
     <use href="#Snow" x="50" y="250"/>
+
+    <use href="#Clouds" x="250" y="50"/>
     <!-- -->
 
     <!-- Message Box -->
