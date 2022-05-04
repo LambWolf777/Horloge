@@ -40,7 +40,8 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
 
             setInterval(updateTime, 1000);          // every second
-            setInterval(function() { updateMsg(messages); }, 1000);    // every second 
+            setInterval(getMsg, 1000);              // every second
+            setInterval(function() { updateMsg(messages); }, 1000); // every second
             setInterval(getMeteo, 1000 * 60 * 60);  // every hour
         }
 
@@ -67,14 +68,14 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         function updateMeteo(meteo) {
             let hourWeather = getMeteoArray(meteo)
 
-
+            setSun_R_S(meteo)
             moon_scaling(meteo["daily"][0]["moon_phase"])
         }
 
 
+        // called by getMsg when we receive response
         function updateMsg(msgJSON) {
-
-            var currentEpoch=Math.round(Date.now()/1000);
+             var currentEpoch=Math.round(Date.now()/1000);
             const msgNode = document.getElementById("messageText");
             const animDuration = parseInt(window.getComputedStyle(msgNode).transitionDuration.slice(0,1));
             console.log(msgJSON);
@@ -90,7 +91,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                     else {
                         msgNode.classList.remove("importantMsg");
                     }
-                    calEvent["lastActive"] = calEvent["active"];                    
+                    calEvent["lastActive"] = calEvent["active"];
                 }
                 else if (calEvent["lastActive"]){
                     msgNode.classList.replace("active","leaving");
@@ -117,7 +118,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
             }
             msgNode.innerHTML = msg;
-
         }
 
         //////////////////////////////////////////////////////////////////////
@@ -180,7 +180,17 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             }
 
             return weather
+        }
 
+
+        function getSun_R_S(meteoJSON) {
+            let sunrise = meteoJSON["current"]["sunrise"];
+            let sunset = meteoJSON["current"]["sunset"];
+
+            return {
+                "sunrise": timeFromEpoch(sunrise),
+                "sunset": timeFromEpoch(sunset)
+            }
         }
 
         var messages;
@@ -196,7 +206,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                     for (var i=0; i<messages.length; i++){
                         messages[i]["active"] = false;
                         messages[i]["lastActive"] = false;
-                    } 
+                    }
                 }
             };
             req.open("GET", url, true);
@@ -231,10 +241,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             } else {
                 moon_name = 'waning crescent';
             }
-
-            // TODO: remove me
-            document.getElementById("x-moon_name").innerHTML = moon_name;
-            document.getElementById("x-moon_phase").innerHTML = moonPhase;
         }
 
 
@@ -276,7 +282,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             // console.log("half_moon_left_scale value is: " + half_moon_left_scale);
             // console.log("hider_scale value is: " + hider_scale);
 
-            //moon_phase_name(moonPhase);
+            // moon_phase_name(moonPhase);
         }
 
 
@@ -296,18 +302,70 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             }
         }
 
-        //set false to display sunrise/sunset by default instead      
-        var displayingWeather = true;
+
+        var displayingWeather = true; //set false to display sunrise/sunset by default instead
         function switchDisplay(){
+
             displayingWeather = !displayingWeather;
             if (displayingWeather){
                 //make weather stuff 'display: none;'' or a fancier animation if we'd like
                 //make sunrise stuff display
+
+                document.getElementById("sun_R_S").setAttribute("display", "none")
+
             }
             else{
                 //make sunset/sunrise stuff 'display: none;'' or a fancier animation if we'd like
                 //make weather stuff display
+
+                document.getElementById("sun_R_S").setAttribute("display", "default")
+
             }
+        }
+
+        function setSun_R_S (meteoJSON) {
+            let info = getSun_R_S(meteoJSON)
+
+            let sunrise = info["sunrise"]["h"]
+            let sunset = info["sunset"]["h"]
+
+            let increment = 2 * Math.PI / 24
+
+            growSVG("horloge", "g", {
+                "id": "sun_R_S",
+                "display": "none"   // Hidden on load
+            })
+
+            growSVG("sun_R_S", "path", {
+                "d": polarRect(500, 500, 400, 100, Math.PI/2 - sunrise*increment, -increment),
+                "fill": "rgb(225,100,156)",
+                "stroke": "black",
+                "stroke-width": "2"
+            })
+
+            let pointRise = polarPoint(500, 500, 450, Math.PI/2 - sunrise*increment - increment/2)
+            growSVG("sun_R_S", "use", {
+                "href": "#p_sun",
+                "x": pointRise[0],
+                "y": pointRise[1]
+            })
+
+
+
+            growSVG("sun_R_S", "path", {
+                "d": polarRect(500, 500, 400, 100, Math.PI/2 - sunset*increment, -increment),
+                "fill": "url(#starry)",
+                "stroke": "black",
+                "stroke-width": "2",
+
+            })
+
+            let pointSet = polarPoint(500, 500, 450, Math.PI/2 - sunset*increment  - increment/2 )
+            growSVG("sun_R_S", "use", {
+                "href": "#sunset",
+                "x": pointSet[0],
+                "y": pointSet[1]
+            })
         }
 
         //////////////////////////////////////////////////////////////////////
@@ -374,9 +432,9 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         }
 
         function makeClock() {
-            genCadran(24, 500, 500, 400, 50, "h", "time")
-            genCadran(60, 500, 500, 370, 30, "m", "time")
-            genCadran(60, 500, 500, 350, 20, "s", "time", false) // Not sure if I like having the seconds in text
+            genCadran(24, 500, 500, 350, 50, "h", "time")
+            genCadran(60, 500, 500, 320, 30, "m", "time")
+            genCadran(60, 500, 500, 300, 20, "s", "time", false) // Not sure if I like having the seconds in text
         }
 
 
@@ -593,6 +651,11 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             <stop offset="100%" stop-color="orange"/>
         </radialGradient>
 
+        <radialGradient id="starGrad" cx="50" cy="50" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="rgb(118, 230, 236)"/>
+            <stop offset="100%" stop-color="white"/>
+        </radialGradient>
+
     </defs>
 
     <g id="p_sun" transform="translate(-50 -50)" fill="url('#sunGrad')">
@@ -632,6 +695,19 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
               l 22 -33
               l -11 -4
               l 12 -26"/>
+    </g>
+
+
+    <g id="p_star" transform="translate(-50 -50)" fill="url('#starGrad')">
+        <path d="M 50 0
+                 L 60 40
+                 L 100 50
+                 L 60 60
+                 L 50 100
+                 L 40 60
+                 L 0 50
+                 L 40 40
+                 Z"/>
     </g>
 
 </svg>
@@ -742,14 +818,11 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             100% { fill: aqua }
         }
 
-        @keyframes swaying {
+         @keyframes swaying {
             from {transform: translateX(-10px);}
             to {transform: translate(10px);}
         }
 
-        .inMessageWindow {
-            clip-path: url(#messageWindowClip);
-        }
 
         #button {
             fill: red;
@@ -757,6 +830,10 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         #button:active {
             fill:rgb(119, 0, 0);
+        }
+
+        #windowMask {
+            mask-type: luminance;
         }
 
         #messageText {
@@ -774,14 +851,16 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         #messageText.leaving {
             transform: translateY(270px);
         }
-        #testRect {
-            transition: transform 1s;
-        }
-        #testRect:hover {
-            transform: translateY(100px);
-        }
+
+        /*#testRect {*/
+        /*    transition: transform 1s;*/
+        /*}*/
+        /*#testRect:hover {*/
+        /*    transform: translateY(100px);*/
+        /*}*/
+
         #messageText.importantMsg {
-            /* more styling could be applied to important messages 
+            /* more styling could be applied to important messages
             (fill, animation...) */
             font-weight: bolder;
         }
@@ -806,13 +885,13 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         <g id="rainfall" transform="translate(-50 -10)">
             <use href="#drop" x="90" y="25">
-                <animate attributeName="y" values="25;100" dur="1.25s" repeatCount="indefinite"/>
-            </use>
-            <use href="#drop" x="115" y="25">
                 <animate attributeName="y" values="25;100" dur="1s" repeatCount="indefinite"/>
             </use>
+            <use href="#drop" x="115" y="25">
+                <animate attributeName="y" values="25;100" dur="0.75s" repeatCount="indefinite"/>
+            </use>
             <use href="#drop" x="140" y="25">
-                <animate attributeName="y" values="25;100" dur="1.5s" repeatCount="indefinite"/>
+                <animate attributeName="y" values="25;100" dur="1.25s" repeatCount="indefinite"/>
             </use>
 
             <use href="#p_clouds" x="40" y="-120"/>
@@ -827,34 +906,42 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             </use>
         </g>
 
+
+        <use id="smallStar" href="#p_star" transform="scale(0.1)"/>
+        <use id="smallMoon" href="#moon" transform="scale(0.5)"/>
+        <g id="sunset" transform="translate(-50 -50)">
+            <use href="#smallMoon" x="50" y="50"/>
+        </g>
+
+        <pattern id="starry" viewBox="0 0 12 12" width="10%" height="10%">
+            <rect x="0" y="0" width="12" height="12" fill="rgba(22,34,77,1)" stroke="rgba(22,34,77,1)"/>
+            <use href="#smallStar" x="6" y="6"/>
+        </pattern>
+
+
     </defs>
 
-    <!-- Canvas Box -->
-<!--    <rect x="1" y="0" width="198" height="200" fill="none" stroke="black" stroke-width="1"/>-->
 
 
-    <!-- Finally, I can position correctly with it's center -->
-<!--    <use href="#big_sun" x="100" y="100"/>-->
     <use href="#thunderstorm" x="50" y="70"/>
 
-
-    <use href="#moon" x="500" y="750"/>
-
-    <rect id="messageWindow" x="350" y="400" width="300" height="200" rx="25" fill="aqua" style="animation: glowBlue 4s ease infinite" />
-
-  <!--   <rect id="testRect" x="300" y="380" width="200" height="200" rx="25" fill="green" class="inMessageWindow"  />  -->
-
-    <text id="messageText" x="505" y="380">Initializing</text>
-
-    <mask id="windowMask" mask-type="luminance">
+    <!-- Message Box -->
+    <mask id="windowMask">
         <rect x="0" y="0" width="1000" height="1000" rx="25" fill="white" />
         <rect x="350" y="400" width="300" height="200" rx="25" fill="black" />
     </mask>
 
+    <rect id="messageWindow" x="350" y="400" width="300" height="200" rx="25" fill="aqua" style="animation: glowBlue 4s ease infinite" />
+
+    <text id="messageText" x="505" y="380" mask="url(#windowMask)">Initializing</text>
+
+
+    <!-- Other components -->
     <circle cx="500" cy="500" r="400" fill="black" mask="url(#windowMask)"/>
 
-    <circle id="button" onclick="switchDisplay()" cx="665" cy="285" r="30"  stroke="hsl(0, 0%, 22%)" stroke-width="3"/>
+    <use href="#moon" x="500" y="700"/>
 
+    <circle id="button" onclick="switchDisplay()" cx="625" cy="300" r="30"  stroke="hsl(0, 0%, 22%)" stroke-width="3"/>
 
 </svg>
 
