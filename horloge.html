@@ -896,9 +896,9 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         <!-- Meteo prediction drawables should all fit in a 100x100 box and to be placed by their centers -->
         <g id="Clear">
-            <use id="p_sun"/>
+            <use href="#p_sun"/>
         </g>
-        
+
         <g id="Clouds" transform="translate(-50 -50)">
             <use href="#lightCloud" x="60" y="50"/>
             <use href="#darkCloud" x="40" y="55"/>
@@ -956,6 +956,9 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
     <rect x="100" y="100" width="100" height="100"/>
     <use href="#Drizzle" x="150" y="150"/>
+
+    <rect x="100" y="0" width="100" height="100"/>
+    <use href="#Clear" x="150" y="50"/>
     <!-- -->
 
     <!-- Message Box -->
