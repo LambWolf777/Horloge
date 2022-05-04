@@ -658,6 +658,25 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
     </g>
 
 
+    <g id="p_snowflake" transform="translate(-50 -50)" stroke="lightblue" stroke-width="2">
+        <path d="M 50 50 v -40 M 50 35 l -10 -10 M 50 35 l 10 -10 M 50 25 l -7 -7 M 50 25 l 7 -7"/>
+        <path transform="scale(1,-1) translate(0, -100)"
+              d="M 50 50 v -40 M 50 35 l -10 -10 M 50 35 l 10 -10 M 50 25 l -7 -7 M 50 25 l 7 -7"/>
+        <path transform="rotate(45, 50, 50)"
+              d="M 50 50 v -40 M 50 35 l -10 -10 M 50 35 l 10 -10 M 50 25 l -7 -7 M 50 25 l 7 -7"/>
+        <path transform="rotate(90, 50, 50)"
+              d="M 50 50 v -40 M 50 35 l -10 -10 M 50 35 l 10 -10 M 50 25 l -7 -7 M 50 25 l 7 -7"/>
+        <path transform="rotate(135, 50, 50)"
+              d="M 50 50 v -40 M 50 35 l -10 -10 M 50 35 l 10 -10 M 50 25 l -7 -7 M 50 25 l 7 -7"/>
+        <path transform="rotate(-45, 50, 50)"
+              d="M 50 50 v -40 M 50 35 l -10 -10 M 50 35 l 10 -10 M 50 25 l -7 -7 M 50 25 l 7 -7"/>
+        <path transform="rotate(-90, 50, 50)"
+              d="M 50 50 v -40 M 50 35 l -10 -10 M 50 35 l 10 -10 M 50 25 l -7 -7 M 50 25 l 7 -7"/>
+        <path transform="rotate(-135, 50, 50)"
+              d="M 50 50 v -40 M 50 35 l -10 -10 M 50 35 l 10 -10 M 50 25 l -7 -7 M 50 25 l 7 -7"/>
+    </g>
+
+
     <!-- cloud that takes the upper 40 units and 100 wide of a 100x100 draw box
          Positionned by the center of the 100x100 drawBox -->
     <g id="p_cloud" transform="translate(-50 -50)">
@@ -868,6 +887,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         <!-- Adapted drawables -->
         <use id="drop" href="#p_droplet" transform="scale(0.3)"/>
         <use id="smallDrop" href="#p_droplet" transform="scale(0.15)"/>
+        <use id="snowflake" href="#p_snowflake" transform="scale(0.3)"/>
 
         <use id="smallStar" href="#p_star" transform="scale(0.08)">
             <animateTransform
@@ -932,7 +952,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             <use href="#Clouds" x="50" y="50"/>
         </g>
 
-
         <g id="Thunderstorm">
             <use href="#p_lightning" transform="scale(0.6)" y="25">
                 <animate attributeName="opacity" values="0;1;1;0;1;0;0;1"
@@ -942,6 +961,19 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             <use href="#Rain"/>
         </g>
 
+        <g id="Snow" transform="translate(-50 -50)">
+            <use href="#snowflake" x="25" y="40">
+                <animate attributeName="y" values="20;80" dur="1s" repeatCount="indefinite"/>
+            </use>
+            <use href="#snowflake" x="50" y="40">
+                <animate attributeName="y" values="20;80" dur="0.85s" repeatCount="indefinite"/>
+            </use>
+            <use href="#snowflake" x="75" y="40">
+                <animate attributeName="y" values="20;80" dur="0.75s" repeatCount="indefinite"/>
+            </use>
+
+            <use href="#lightCloud" x="50" y="50"/>
+        </g>
 
     </defs>
 
@@ -959,6 +991,9 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
     <rect x="100" y="0" width="100" height="100"/>
     <use href="#Clear" x="150" y="50"/>
+
+    <rect x="0" y="200" width="100" height="100"/>
+    <use href="#Snow" x="50" y="250"/>
     <!-- -->
 
     <!-- Message Box -->
