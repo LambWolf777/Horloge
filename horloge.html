@@ -76,7 +76,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         function updateMsg(msgJSON) {
              var currentEpoch=Math.round(Date.now()/1000);
             const msgNode = document.getElementById("messageText");
-            const animDuration = parseInt(window.getComputedStyle(msgNode).transitionDuration.slice(0,1));
+            const animDuration = parseInt(window.getComputedStyle(msgNode).transitionDuration.slice(0,-1));
             console.log(msgJSON);
             for (var i=0; i<msgJSON.length;i++){
                 var calEvent = msgJSON[i];
@@ -101,20 +101,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                     } , animDuration*1000);
 
                 }
-                //else {
-                //    msgNode.classList.remove("leaving");
-                // }
-                calEvent["lastActive"] = calEvent["active"];
-                //testing
-                // console.log("Msg is active: " + active);
-                // console.log("Last active: " + lastActive);
-                var tempsRestant=(calEvent.fin-currentEpoch);
-                // console.log(tempsRestant);
-                // console.log(currentEpoch);
-                // if( active ){ console.log("(ACTIF! Il reste "+tempsRestant+" sec)");}
-                // if( currentEpoch>calEvent.fin ){ console.log(" inactif depuis " + tempsRestant);}
-                // console.log("lastActive: "+ calEvent["lastActive"])
-
             }
             msgNode.innerHTML = msg;
         }
