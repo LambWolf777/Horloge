@@ -39,9 +39,9 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             }, 10)
 
 
-            setInterval(updateTime, 1000);          // every second
+            setInterval(updateTime, 100);                             // every millisecond
             setInterval(function() { updateMsg(messages); }, 1000); // every second
-            setInterval(getMeteo, 1000 * 60 * 60);  // every hour
+            setInterval(getMeteo, 1000 * 60 * 60);                  // every hour
         }
 
         function initPrimitives() {
@@ -59,6 +59,8 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
             // set clock times here ...
             setTime(time);
+
+            animateSun(time)
         }
 
         // This is called by getMeteo once we receive API response,
@@ -74,10 +76,10 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         // called by getMsg when we receive response
         function updateMsg(msgJSON) {
-             var currentEpoch=Math.round(Date.now()/1000);
+            var currentEpoch=Math.round(Date.now()/1000);
             const msgNode = document.getElementById("messageText");
             const animDuration = parseInt(window.getComputedStyle(msgNode).transitionDuration.slice(0,-1));
-            console.log(msgJSON);
+
             for (var i=0; i<msgJSON.length;i++){
                 var calEvent = msgJSON[i];
                 calEvent["active"] = (calEvent.debut<currentEpoch && currentEpoch<calEvent.fin);
@@ -101,6 +103,9 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                     } , animDuration*1000);
 
                 }
+
+                calEvent["lastActive"] = calEvent["active"];
+
             }
             msgNode.innerHTML = msg;
         }
@@ -141,7 +146,8 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
                 "h": now.getHours(),
                 "m": now.getMinutes(),
-                "s": now.getSeconds()
+                "s": now.getSeconds(),
+                "ms": now.getMilliseconds()
             }
 
 
@@ -358,7 +364,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         // SVG Generation ////////////////////////////////////////////////////
 
-        function finishSun() {
+        function finishSun(thetaOffset=0) {
             let sun = document.getElementById("p_sun");
             const r = Number(sun.firstElementChild.getAttribute("r"));
             const cx = Number(sun.firstElementChild.getAttribute("cx"));
@@ -370,7 +376,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             for (let i = 0; i < spikeCount; i++) {
 
                 let theta1 = i * increment;
-                let thetaMid = (i + 0.5) * increment; // adding above 1 makes it spiral
+                let thetaMid = (i + 0.5 + thetaOffset) * increment; // adding above 1 makes it spiral
                 let theta2 = (i + 1) * increment;
 
                 let growth = 2;
@@ -386,6 +392,20 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
                 growSVG("p_sun", "polygon", {"points": pointsToAttr(points)})
             }
+        }
+
+
+        function animateSun(time) {
+            // Reset Sun
+            document.getElementById("p_sun").innerHTML = "<circle r=\"25\" cx=\"50\" cy=\"50\"/>\n"
+
+            const duration = 2000;  // ms
+            let milliseconds = ( time.s % 2 )*1000 + time.ms
+
+            const piFactor = 2*Math.PI/duration;
+            let thetaOffset = Math.sin(milliseconds * piFactor);
+
+            finishSun(thetaOffset);
         }
 
         function finishDroplet() {
@@ -892,7 +912,16 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         </g>
 
 
-        <use id="smallStar" href="#p_star" transform="scale(0.1)"/>
+        <use id="smallStar" href="#p_star" transform="scale(0.08)">
+            <animateTransform
+                attributeName="transform"
+                attributeType="XML"
+                type="scale"
+                values="0.08; 0.12; 0.08"
+                dur="1s"
+                calcMode="linear"
+                repeatCount="indefinite"/>
+        </use>
         <use id="smallMoon" href="#moon" transform="scale(0.5)"/>
         <g id="sunset" transform="translate(-50 -50)">
             <use href="#smallMoon" x="50" y="50"/>
