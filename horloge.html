@@ -30,13 +30,13 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
             updateTime();
             getMeteo();
-            getMsg()
+            getMsg();
 
             let i = 0
             setInterval(function () {
-                i++
-                moon_scaling(i/1000)
-            }, 10)
+                i++;
+                moon_scaling(i/1000);
+            }, 10);
 
 
             setInterval(updateTime, 100);                             // every millisecond
@@ -55,22 +55,23 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         // Updaters (macro) //////////////////////////////////////////////////
 
         function updateTime() {
-            let time = getTime()
+            let time = getTime();
 
             // set clock times here ...
             setTime(time);
 
-            animateSun(time)
+            animateSun(time);
         }
 
         // This is called by getMeteo once we receive API response,
         // where meteo is the complete JSON data.
         // See https://openweathermap.org/api/one-call-api#example for JSON structure
         function updateMeteo(meteo) {
-            let hourWeather = getMeteoArray(meteo)
+            let hourWeather = getMeteoArray(meteo);
 
-            setSun_R_S(meteo)
-            moon_scaling(meteo["daily"][0]["moon_phase"])
+            setSun_R_S(meteo);
+            
+            moon_scaling(meteo["daily"][0]["moon_phase"]);
         }
 
 
@@ -80,7 +81,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             const msgNode = document.getElementById("messageText");
             const animDuration = parseInt(window.getComputedStyle(msgNode).transitionDuration.slice(0,-1));
 
-            for (var i=0; i<msgJSON.length;i++){
+            for (var i=0; i<msgJSON.length; i++){
                 var calEvent = msgJSON[i];
                 calEvent["active"] = (calEvent.debut<currentEpoch && currentEpoch<calEvent.fin);
                 if (calEvent["active"]){
@@ -115,9 +116,11 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         // get Info //////////////////////////////////////////////////////////
 
+        
+        // Get the meteo JSON and call to updateMeteo once we receive
         function getMeteo() {
             var url = "https://api.openweathermap.org/data/2.5/onecall?lat=45.5028" +
-                "&lon=-73.608&units=metric&lang=en&appid=1eaf15e7cee034f3f9e265ccb4b57d4e"
+                "&lon=-73.608&units=metric&lang=en&appid=1eaf15e7cee034f3f9e265ccb4b57d4e";
 
             var req = new XMLHttpRequest();
             req.onreadystatechange = function () {
@@ -132,6 +135,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         }
 
 
+        // Returns an object containing various units to represent current time
         function getTime() {
             var now = new Date();
 
@@ -144,7 +148,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                 "m": now.getMinutes(),
                 "s": now.getSeconds(),
                 "ms": now.getMilliseconds()
-            }
+            };
         }
 
 
@@ -160,13 +164,14 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             let hourly = meteoJSON["hourly"];
 
             for (let h=0; h<24; ++h) {
-                weather.push(hourly[h]["weather"][0]["main"])
+                weather.push(hourly[h]["weather"][0]["main"]);
             }
 
-            return weather
+            return weather;
         }
 
 
+        // get sunrise and sunset as Date objects
         function getSun_R_S(meteoJSON) {
             let sunrise = meteoJSON["current"]["sunrise"];
             let sunset = meteoJSON["current"]["sunset"];
@@ -174,9 +179,11 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             return {
                 "sunrise": timeFromEpoch(sunrise),
                 "sunset": timeFromEpoch(sunset)
-            }
+            };
         }
 
+        
+        // Get message JSON 
         var messages;
         function getMsg() {
             var url = "http://www.iro.umontreal.ca/~roys/ift1005/calendrier/test.php?" +
@@ -204,7 +211,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
 
         //Sets the scaling values to draw the correct moon phase
-        function moon_scaling(moonPhase){
+        function moon_scaling(moonPhase) {
             moonPhase = Math.abs(moonPhase) % 1;
 
             const root = document.querySelector(':root');
@@ -213,23 +220,23 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             var hider_scale;
 
             if (moonPhase < 0.25) {
-                half_moon_right_scale = 1
+                half_moon_right_scale = 1;
                 half_moon_left_scale = 0;
                 hider_scale = 1-4*moonPhase;
             }
             else if (moonPhase < 0.5){
-                half_moon_right_scale = 1
+                half_moon_right_scale = 1;
                 half_moon_left_scale = 1-4*moonPhase;
-                hider_scale = 0
+                hider_scale = 0;
             }
             else if (moonPhase < 0.75){
                 half_moon_right_scale = 3-4*moonPhase;
-                half_moon_left_scale = -1
-                hider_scale = 0
+                half_moon_left_scale = -1;
+                hider_scale = 0;
             }
             else {
-                half_moon_right_scale = 0
-                half_moon_left_scale = -1
+                half_moon_right_scale = 0;
+                half_moon_left_scale = -1;
                 hider_scale = 3-4*moonPhase;
             }
             root.style.setProperty('--half-moon-right-scale', half_moon_right_scale);
@@ -246,34 +253,39 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                 {"name": "h", "max": 23},
                 {"name": "m", "max": 59},
                 {"name": "s", "max": 59}
-            ]
+            ];
 
             for (let t of all) {
                 let current = time[t["name"]];
                 let prev = getPrevious(current, t["max"]);
 
-                document.getElementById(t["name"] + "_" + prev).setAttribute("style", "animation: none");
-                document.getElementById(t["name"] + "_" + current).setAttribute("style", "animation: glowBlue 1s linear infinite");
+                document.getElementById(t["name"] + "_" + prev)
+                    .setAttribute("style", "animation: none");
+                
+                document.getElementById(t["name"] + "_" + current)
+                    .setAttribute("style", "animation: glowBlue 1s linear infinite");
             }
         }
 
-
+        
+        // Change between displaying the hourly meteo predictions
+        //      and the sunrise/sunset times
         var displayingWeather = true; //set false to display sunrise/sunset by default instead
-        function switchDisplay(){
+        function switchDisplay() {
 
             displayingWeather = !displayingWeather;
-            if (displayingWeather){
+            if (displayingWeather) {
                 //make weather stuff 'display: none;'' or a fancier animation if we'd like
                 //make sunrise stuff display
 
-                document.getElementById("sun_R_S").setAttribute("display", "none")
+                document.getElementById("sun_R_S").setAttribute("display", "none");
 
             }
-            else{
+            else {
                 //make sunset/sunrise stuff 'display: none;'' or a fancier animation if we'd like
                 //make weather stuff display
 
-                document.getElementById("sun_R_S").setAttribute("display", "default")
+                document.getElementById("sun_R_S").setAttribute("display", "default");
 
             }
         }
@@ -282,50 +294,51 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         // Creates a <g id="sun_R_S"> containing the necessary elements to show the hours
         // of sunrise and sunset outside the hours 'Cadrans'
         function setSun_R_S (meteoJSON) {
-            let info = getSun_R_S(meteoJSON)
+            let info = getSun_R_S(meteoJSON);
 
-            let sunrise = info["sunrise"]["h"]
-            let sunset = info["sunset"]["h"]
+            let sunrise = info["sunrise"]["h"];
+            let sunset = info["sunset"]["h"];
 
-            let increment = 2 * Math.PI / 24
+            let increment = - 2 * Math.PI / 24;  // Move by one hour
+            const topTheta = Math.PI/2;  // Aligned on hour 0
 
             // Group
             growSVG("horloge", "g", {
                 "id": "sun_R_S",
                 "display": "none"   // Hidden on load
-            })
+            });
 
             // sunrise
             growSVG("sun_R_S", "path", {
-                "d": polarRect(500, 500, 400, 100, Math.PI/2 - sunrise*increment, -increment),
+                "d": polarRect(500, 500, 400, 100, topTheta + sunrise*increment, increment),
                 "fill": "rgb(225,100,156)",
                 "stroke": "black",
                 "stroke-width": "2"
-            })
+            });
 
-            let pointRise = polarPoint(500, 500, 450, Math.PI/2 - sunrise*increment - increment/2)
+            let pointRise = polarPoint(500, 500, 450, topTheta + sunrise*increment + increment/2)
             growSVG("sun_R_S", "use", {
                 "href": "#p_sun",
                 "x": pointRise[0],
                 "y": pointRise[1]
-            })
+            });
 
 
             // sunset
             growSVG("sun_R_S", "path", {
-                "d": polarRect(500, 500, 400, 100, Math.PI/2 - sunset*increment, -increment),
+                "d": polarRect(500, 500, 400, 100, topTheta + sunset*increment, increment),
                 "fill": "url(#starry)",
                 "stroke": "black",
                 "stroke-width": "2",
 
-            })
+            });
 
-            let pointSet = polarPoint(500, 500, 450, Math.PI/2 - sunset*increment  - increment/2 )
+            let pointSet = polarPoint(500, 500, 450, topTheta + sunset*increment  + increment/2 )
             growSVG("sun_R_S", "use", {
                 "href": "#sunset",
                 "x": pointSet[0],
                 "y": pointSet[1]
-            })
+            });
         }
 
         //////////////////////////////////////////////////////////////////////
@@ -350,7 +363,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
                 let growth = 2;
                 if (i % 2 !== 0) {
-                    growth = 1.6
+                    growth = 1.6;
                 }
 
                 let points = [
@@ -359,17 +372,17 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                     polarPoint(cx, cy, 0.99 * r, theta2)
                 ];
 
-                growSVG("p_sun", "polygon", {"points": pointsToAttr(points)})
+                growSVG("p_sun", "polygon", {"points": pointsToAttr(points)});
             }
         }
 
 
         function animateSun(time) {
             // Reset Sun
-            document.getElementById("p_sun").innerHTML = "<circle r=\"25\" cx=\"50\" cy=\"50\"/>\n"
+            document.getElementById("p_sun").innerHTML = "<circle r=\"25\" cx=\"50\" cy=\"50\"/>\n";
 
             const duration = 2000;  // ms
-            let milliseconds = ( time.s % 2 )*1000 + time.ms
+            let milliseconds = ( time.s % 2 )*1000 + time.ms;
 
             const piFactor = 2*Math.PI/duration;
             let thetaOffset = Math.sin(milliseconds * piFactor);
@@ -379,7 +392,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
 
         function finishDroplet() {
-            let p = polarPoint(50, 70, 30, Math.PI/6)
+            let p = polarPoint(50, 70, 30, Math.PI/6);
 
             growSVG("p_droplet",
                     "path",
@@ -391,7 +404,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                             + " Q 50 20 " + p[0] + " " + p[1]
                             + arcPath(50, 70, 30, - Math.PI/2),
                     }
-            )
+            );
 
             growSVG("p_droplet",
                     "path",
@@ -400,15 +413,15 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                         "fill": "white",
                         "opacity": 0.85
                     }
-            )
+            );
         }
 
 
         // Makes the hour, minutes and seconds "Cadrans"
         function makeClock() {
-            genCadran(24, 500, 500, 350, 50, "h", "time")
-            genCadran(60, 500, 500, 320, 30, "m", "time")
-            genCadran(60, 500, 500, 300, 20, "s", "time", false) // Not sure if I like having the seconds in text
+            genCadran(24, 500, 500, 350, 50, "h", "time");
+            genCadran(60, 500, 500, 320, 30, "m", "time");
+            genCadran(60, 500, 500, 300, 20, "s", "time", false); // Not sure if I like having the seconds in text
         }
 
 
@@ -423,8 +436,8 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         //      txt:    class1 = [idBase]_txt
         //              class2 = [className]_txt
         function genCadran(maxVal, cx, cy, r, dr, idBase, className, addText=true) {
-            let theta = Math.PI / 2
-            let increment = 2 * Math.PI / maxVal
+            let theta = Math.PI / 2;
+            let increment = 2 * Math.PI / maxVal;
 
             for (let i = 0; i < maxVal; i++) {
                 let start = theta - i*increment;
@@ -440,7 +453,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                 );
 
                 if (addText) {
-                    let center = polarPoint(cx, cy, r + dr / 2, start - increment / 2)
+                    let center = polarPoint(cx, cy, r + dr / 2, start - increment / 2);
                     let elem = growSVG("horloge", "text",
                         {
                             "x": center[0],
@@ -463,12 +476,12 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         // We may prefer to compare epoch times directly
         function timeFromEpoch(seconds) {
-            let date = new Date(seconds * 1000)
+            let date = new Date(seconds * 1000);
             return {
                 "h": date.getHours(),
                 "m": date.getMinutes(),
                 "s": date.getSeconds()
-            }
+            };
         }
 
 
@@ -525,11 +538,10 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             let rotX = 0;
             let largeArc = 0;
             let sweep = Number(dTheta < 0);
+            
+            let p2 = polarPoint(cx, cy, r, dTheta);
 
-            let p1 = polarPoint(cx, cy, r)
-            let p2 = polarPoint(cx, cy, r, dTheta)
-
-            return [" A", r, r, rotX, largeArc, sweep, p2[0], p2[1] ].join(" ")
+            return [" A", r, r, rotX, largeArc, sweep, p2[0], p2[1] ].join(" ");
         }
 
 
@@ -580,8 +592,8 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
 </head>
 
-
 <body>
+
 
 <svg id="p_draw" width="0" height="0" viewbox="0 0 100 100">
 
@@ -664,8 +676,8 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 </svg>
 
 
+<!-- Moon Drawbox -->
 <svg width="0" height="0" viewbox="50 50 150 150">
-    <!-- Moon phases -->
     <style>
         :root {
             --half-moon-right-scale: 0;
