@@ -135,11 +135,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         function getTime() {
             var now = new Date();
 
-            // This would probably go in the display function
-            var listeMois = ["janvier", "février", "mars", "avril", "mai", "juin",
-                "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
-
-            let time = {
+            return {
                 "an": now.getFullYear(),
                 "mois": now.getMonth(),
                 "jour": now.getDate(),
@@ -149,9 +145,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                 "s": now.getSeconds(),
                 "ms": now.getMilliseconds()
             }
-
-
-            return time
         }
 
 
@@ -209,31 +202,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         // DOM / micro updaters //////////////////////////////////////////////
 
-        // Il serait peut etre mieux de faire un seul dessin de lune qui s'ajuste ...
-        // We could also just set the moon phase to it's closest phase instead of
-        //      making 8 presets... but it's inaccurate
-        function moon_phase_name(moonPhase) { //Savoir le nom ne sera peut-être pas nécessaire au final
-            var moon_name;
-            const tolerance = 1;
-            if (moonPhase === 0 || moonPhase === 1) {
-                moon_name = 'new moon';
-            } else if (moonPhase <= 0.25 + tolerance && moonPhase >= 0.25-tolerance) {
-                moon_name = 'first quarter moon';
-            } else if (moonPhase <= 0.50 + tolerance && moonPhase >= 0.50-tolerance) {
-                moon_name = 'full moon';
-            } else if (moonPhase <= 0.75 + tolerance && moonPhase >= 0.75-tolerance) {
-                moon_name = 'last quarter moon';
-            } else if (moonPhase < 0.25) {
-                moon_name = 'waxing crescent';
-            } else if (moonPhase < 0.5) {
-                moon_name = 'waxing gibous';
-            } else if (moonPhase < 0.75) {
-                moon_name = 'waning gibous';
-            } else {
-                moon_name = 'waning crescent';
-            }
-        }
-
 
         //Sets the scaling values to draw the correct moon phase
         function moon_scaling(moonPhase){
@@ -268,15 +236,11 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             root.style.setProperty('--half-moon-left-scale', half_moon_left_scale);
             root.style.setProperty('--hider-scale', hider_scale);
 
-            //For debugging, may be deleted
-            // console.log("half_moon_right_scale value is: " + half_moon_right_scale);
-            // console.log("half_moon_left_scale value is: " + half_moon_left_scale);
-            // console.log("hider_scale value is: " + hider_scale);
-
-            // moon_phase_name(moonPhase);
         }
 
 
+        // Update the time shown on the clock by changing the animation attribute of
+        // the previous and current time cells
         function setTime(time) {
             let all = [
                 {"name": "h", "max": 23},
@@ -314,6 +278,9 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             }
         }
 
+
+        // Creates a <g id="sun_R_S"> containing the necessary elements to show the hours
+        // of sunrise and sunset outside the hours 'Cadrans'
         function setSun_R_S (meteoJSON) {
             let info = getSun_R_S(meteoJSON)
 
@@ -322,11 +289,13 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
             let increment = 2 * Math.PI / 24
 
+            // Group
             growSVG("horloge", "g", {
                 "id": "sun_R_S",
                 "display": "none"   // Hidden on load
             })
 
+            // sunrise
             growSVG("sun_R_S", "path", {
                 "d": polarRect(500, 500, 400, 100, Math.PI/2 - sunrise*increment, -increment),
                 "fill": "rgb(225,100,156)",
@@ -342,7 +311,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             })
 
 
-
+            // sunset
             growSVG("sun_R_S", "path", {
                 "d": polarRect(500, 500, 400, 100, Math.PI/2 - sunset*increment, -increment),
                 "fill": "url(#starry)",
@@ -408,6 +377,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             finishSun(thetaOffset);
         }
 
+
         function finishDroplet() {
             let p = polarPoint(50, 70, 30, Math.PI/6)
 
@@ -431,11 +401,10 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                         "opacity": 0.85
                     }
             )
-
-
-
         }
 
+
+        // Makes the hour, minutes and seconds "Cadrans"
         function makeClock() {
             genCadran(24, 500, 500, 350, 50, "h", "time")
             genCadran(60, 500, 500, 320, 30, "m", "time")
@@ -503,11 +472,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         }
 
 
-        function getEpoch() {
-            return Date.now()/1000
-        }
-
-
         // Used to get previous hour / minute / second
         function getPrevious (value, maxVal) {
             if (value === 0) {
@@ -515,6 +479,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             }
             return value - 1;
         }
+
 
         // return a [x, y] point, <br>
         // allows to use angles as if we were using a right-handed coordinate
@@ -552,8 +517,8 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                  + [" A ", r+dr, r+dr, rotX, largeArc, posSweep, points[2][0], points[2][1]].join(" ")
                  + [" L ", points[3][0], points[3][1]].join(" ")
                  + [" A ", r, r, rotX, largeArc, negSweep, points[0][0], points[0][1]].join(" ");
-
         }
+
 
         // Return the path data for an arc, angles are in radians
         function arcPath (cx, cy, r, dTheta) {
@@ -566,26 +531,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
             return [" A", r, r, rotX, largeArc, sweep, p2[0], p2[1] ].join(" ")
         }
-
-        function testPolarRect() {
-            for (let r=250; r > 5; r -= 20) {
-                const nRects = 6;
-                const increment = 2 * Math.PI / nRects;
-
-                for (let i = 0; i < nRects; i++) {
-                    if ( i % 2 === 0) {
-                        growSVG("horloge", "path",
-                            {
-                                "d": polarRect(300, 400, r, 10, i * increment, increment),
-                                "fill": "black"
-                            }
-                            );
-                    }
-                }
-            }
-        }
-
-
 
 
         // take a [x, y] point and return as "x,y"
@@ -650,7 +595,8 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         <!-- userSpaceOnUse allows for the gradient to spread on groups
          (instead of applying to each element) Since it applies to global viewBox space -->
-        <!-- Use CSS gradients to get support in FireFox -->
+
+        <!-- Use CSS gradients to get support in FireFox ... too bad-->
         <radialGradient id="sunGrad" cx="50" cy="50" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stop-color="yellow"/>
             <stop offset="100%" stop-color="orange"/>
@@ -787,9 +733,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
     <style>
 
-        /* TODO: find a way to make sure text always fit in the cells !important */
-            /* It seems to scale correctly ... */
-
         /* For placing text by its center see the resources linked in:
                 https://stackoverflow.com/a/31522006  */
         .time_txt {
@@ -857,13 +800,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             transform: translateY(270px);
         }
 
-        /*#testRect {*/
-        /*    transition: transform 1s;*/
-        /*}*/
-        /*#testRect:hover {*/
-        /*    transform: translateY(100px);*/
-        /*}*/
-
         #messageText.importantMsg {
             /* more styling could be applied to important messages
             (fill, animation...) */
@@ -875,18 +811,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
     <defs>
 
-        <!-- example of use -->
-        <!-- Need to create a scaled instance before setting a position ... (If I need to scale that is)-->
-        <use id="big_sun" xlink:href="#p_sun" transform="scale(2)" />
-
         <use id="drop" href="#p_droplet" transform="scale(0.4)"/>
-
-        <!-- This could be animated by making them fall at different speeds ( y = ( y + speed ) % 100 ) -->
-        <g id="rain" transform="translate(-50 -50)">
-            <use href="#drop" x="25" y="25"/>
-            <use href="#drop" x="50" y="50"/>
-            <use href="#drop" x="75" y="25"/>
-        </g>
 
         <g id="rainfall" transform="translate(-50 -10)">
             <use href="#drop" x="90" y="25">
@@ -922,6 +847,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                 calcMode="linear"
                 repeatCount="indefinite"/>
         </use>
+
         <use id="smallMoon" href="#moon" transform="scale(0.5)"/>
         <g id="sunset" transform="translate(-50 -50)">
             <use href="#smallMoon" x="50" y="50"/>
