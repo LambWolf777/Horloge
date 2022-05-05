@@ -24,21 +24,15 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         // Initializers //////////////////////////////////////////////////////
 
         function init() {
-            initPrimitives();
+            initPrimitives();   // Finish basic drawings
 
             makeClock();    // makes the hours/minutes/seconds
 
             updateTime();
             getMeteo();
             getMsg();
-
-            let i = 0
-            setInterval(function () {
-                i++;
-                moon_scaling(i / 1000);
-            }, 10);
-
-
+            
+            
             setInterval(updateTime, 100);                               // every millisecond
             setInterval(function () { updateMsg(messages); }, 1000);    // every second
             setInterval(getMeteo, 1000 * 60 * 60);                      // every hour
@@ -277,25 +271,66 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         }
 
 
+        function disableHours() {
+            let hours = document.getElementById("sun_R_STransform");
+            document.getElementById("sun_R_S").setAttribute("display", "default");
+            hours.beginElement();
+        }
+
+        function disableMeteo() {
+            let meteo = document.getElementById("meteoTransform");
+
+            document.getElementById("meteo").setAttribute("display", "default");
+            meteo.beginElement()
+        }
+
+
         // Change between displaying the hourly meteo predictions
         //      and the sunrise/sunset times
-        var displayingWeather = true; //set false to display sunrise/sunset by default instead
+        var displayingWeather = true; 
         function switchDisplay() {
 
-            displayingWeather = !displayingWeather;
+            let meteo = document.getElementById("meteoTransform");
+            let hours = document.getElementById("sun_R_STransform");
+
             if (displayingWeather) {
                 //make weather stuff 'display: none;'' or a fancier animation if we'd like
                 //make sunrise stuff display
-                document.getElementById("meteo").setAttribute("display", "default");
-                document.getElementById("sun_R_S").setAttribute("display", "none");
+
+                document.getElementById("sun_R_S").setAttribute("display", "none")
+
+                hours.removeEventListener("endEvent", disableMeteo)
+                meteo.addEventListener("endEvent", disableHours)
+
+                meteo.setAttribute("from", "1")
+                meteo.setAttribute("to", "0.75")
+
+                hours.setAttribute("from", "0.75")
+                hours.setAttribute("to", "1")
+
+                meteo.beginElement();
 
             } else {
                 //make sunset/sunrise stuff 'display: none;'' or a fancier animation if we'd like
                 //make weather stuff display
-                document.getElementById("meteo").setAttribute("display", "none");
-                document.getElementById("sun_R_S").setAttribute("display", "default");
+
+                document.getElementById("meteo").setAttribute("display", "none")
+
+                meteo.removeEventListener("endEvent", disableHours)
+                hours.addEventListener("endEvent", disableMeteo)
+
+                meteo.setAttribute("from", "0.75")
+                meteo.setAttribute("to", "1")
+
+                hours.setAttribute("from", "1")
+                hours.setAttribute("to", "0.75")
+
+                hours.beginElement();
 
             }
+
+            displayingWeather = !displayingWeather;
+
         }
 
 
@@ -308,25 +343,33 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             let increment = -2 * Math.PI / 24;  // Move by one hour
             const topTheta = Math.PI / 2;  // Aligned on hour 0
 
-            // Group
-            growSVG("horloge", "g",
+
+            // Do nothing at start, (declared for 'readability')
+            growSVG("sun_R_S", "animateTransform",
                 {
-                    "id": "sun_R_S",
-                    "display": "none"   // Hidden on load
-                }
-            );
+                    "id": "sun_R_STransform",
+                    "attributeName": "transform",
+                    "attributeType": "XML",
+                    "type": "scale",
+                    "from": "0.75",
+                    "to": "0.75",
+                    "dur": "0.5s",
+                    "begin": "0s",
+                    "fill": "freeze",
+                    "repeatCount": "1"
+                })
 
             // sunrise
             growSVG("sun_R_S", "path",
                 {
-                    "d": polarRect(500, 500, 400, 100, topTheta + sunrise * increment, increment),
+                    "d": polarRect(0, 0, 400, 100, topTheta + sunrise * increment, increment),
                     "fill": "rgb(225,100,156)",
                     "stroke": "black",
                     "stroke-width": "2"
                 }
             );
 
-            let pointRise = polarPoint(500, 500, 450, topTheta + sunrise * increment + increment / 2)
+            let pointRise = polarPoint(0, 0, 450, topTheta + sunrise * increment + increment / 2)
             growSVG("sun_R_S", "use",
                 {
                     "href": "#p_sun",
@@ -339,14 +382,14 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             // sunset
             growSVG("sun_R_S", "path",
                 {
-                    "d": polarRect(500, 500, 400, 100, topTheta + sunset * increment, increment),
+                    "d": polarRect(0, 0, 400, 100, topTheta + sunset * increment, increment),
                     "fill": "url(#starry)",
                     "stroke": "black",
                     "stroke-width": "2",
                 }
             );
 
-            let pointSet = polarPoint(500, 500, 450, topTheta + sunset * increment + increment / 2)
+            let pointSet = polarPoint(0, 0, 450, topTheta + sunset * increment + increment / 2)
             growSVG("sun_R_S", "use",
                 {
                     "href": "#sunset",
@@ -358,8 +401,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
 
         function setMeteo(meteoArray, rise_set_Hours) {
-            let sunrise = rise_set_Hours["sunrise"];
-            let sunset = rise_set_Hours["sunset"];
 
             let increment = -2 * Math.PI / 24;  // Move by one hour
             const topTheta = Math.PI / 2;       // Aligned on midnight
@@ -368,48 +409,56 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             let startTheta = topTheta + increment*currentHour
 
 
-            growSVG("horloge", "g",
+            growSVG("meteo", "animateTransform",
                 {
-                    "id": "meteo",
-                    "display": "default"   // Shown on load
-                }
-            );
+                    "id": "meteoTransform",
+                    "attributeName": "transform",
+                    "attributeType": "XML",
+                    "type": "scale",
+                    "from": "0.75",
+                    "to": "1",
+                    "dur": "0.5s",
+                    "begin": "0s",
+                    "fill": "freeze",
+                    "repeatCount": "1"
+                })
 
             const allowed = ["Clear", "Clouds",
                              "Rain", "Drizzle",
                              "Thunderstorm", "Snow"];
 
             for (let i = 0; i < 24; i++) {
+                // let meteo = meteoArray[i];
+                let meteo = allowed[i%6];
 
-
-                // Unfortunately, changing the background makes it really hard to see come icons
                 let trueHour = (currentHour + i) % 24;
-                let color = "";
+                let sunrise = rise_set_Hours["sunrise"];
+                let sunset = rise_set_Hours["sunset"];
+                let additionnalInfo = "";
 
                 if ( trueHour >= sunrise && trueHour < sunset ) {
-                    color = "rgb(22,34,77)";
+                    additionnalInfo = "Sun";
                 } else {
-                    color = "rgb(22,34,77)";
+                    additionnalInfo = "Moon";  // dark Blue
                 }
 
-                let meteo = allowed[i % 6];
 
                 growSVG("meteo", "path",
                     {
-                        "d": polarRect(500, 500, 400, 100, startTheta + i*increment, increment),
+                        "d": polarRect(0, 0, 400, 100, startTheta + i*increment, increment),
                         "stroke": "black",
                         "stroke-width": "2",
-                        "fill": color,
+                        "fill": "rgb(22,34,77)"  // dark Blue
                     }
                 );
 
-                let centerPoint = polarPoint(500, 500, 450, startTheta + i*increment + increment/2)
+                let centerPoint = polarPoint(0, 0, 450, startTheta + i*increment + increment/2)
 
                 if (! meteo in allowed ) { meteo = "Clear" }
 
                 growSVG("meteo", "use",
                 {
-                    "href": "#f_" + meteo,
+                    "href": "#f_" + (meteo === "Clear" ? meteo + additionnalInfo : meteo),
                     "x": centerPoint[0],
                     "y": centerPoint[1],
                 }
@@ -672,18 +721,16 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
 <svg id="p_draw" width="0" height="0" viewbox="0 0 100 100">
 
-    <!-- Our primitives here! I encourage the use of the p_ prefix on primitives' ids
-    Use a translate to center them around (0, 0) to make scaling/centering easier
-     This means that all of or primitives **will be placed by their CENTER position** -->
+    <!-- Our primitives here! I encourage the use of the p_ prefix on primitives' ID.
+     Use a translation to center them around (0, 0) to make scaling/centering easier
+     This means that all of or primitives ** will be placed by their CENTER position ** -->
 
     <defs>
-        <!-- We use this svg space to draw our primitives.
-             It also allows predictable behavior of gradients when using userSpaceOnUse (see below) -->
-
         <!-- userSpaceOnUse allows for the gradient to spread on groups
          (instead of applying to each element) Since it applies to global viewBox space -->
 
         <!-- Use CSS gradients to get support in FireFox ... too bad-->
+
         <radialGradient id="sunGrad" cx="50" cy="50" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stop-color="yellow"/>
             <stop offset="100%" stop-color="orange"/>
@@ -707,21 +754,24 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
 
     <g id="p_snowflake" transform="translate(-50 -50)" stroke="lightblue" stroke-width="2">
-        <path d="M 50 50 v -40 M 50 35 l -10 -10 M 50 35 l 10 -10 M 50 25 l -7 -7 M 50 25 l 7 -7"/>
-        <path transform="scale(1,-1) translate(0, -100)"
-              d="M 50 50 v -40 M 50 35 l -10 -10 M 50 35 l 10 -10 M 50 25 l -7 -7 M 50 25 l 7 -7"/>
-        <path transform="rotate(45, 50, 50)"
-              d="M 50 50 v -40 M 50 35 l -10 -10 M 50 35 l 10 -10 M 50 25 l -7 -7 M 50 25 l 7 -7"/>
-        <path transform="rotate(90, 50, 50)"
-              d="M 50 50 v -40 M 50 35 l -10 -10 M 50 35 l 10 -10 M 50 25 l -7 -7 M 50 25 l 7 -7"/>
-        <path transform="rotate(135, 50, 50)"
-              d="M 50 50 v -40 M 50 35 l -10 -10 M 50 35 l 10 -10 M 50 25 l -7 -7 M 50 25 l 7 -7"/>
-        <path transform="rotate(-45, 50, 50)"
-              d="M 50 50 v -40 M 50 35 l -10 -10 M 50 35 l 10 -10 M 50 25 l -7 -7 M 50 25 l 7 -7"/>
-        <path transform="rotate(-90, 50, 50)"
-              d="M 50 50 v -40 M 50 35 l -10 -10 M 50 35 l 10 -10 M 50 25 l -7 -7 M 50 25 l 7 -7"/>
-        <path transform="rotate(-135, 50, 50)"
-              d="M 50 50 v -40 M 50 35 l -10 -10 M 50 35 l 10 -10 M 50 25 l -7 -7 M 50 25 l 7 -7"/>
+        <path id="snowTree"
+              d="M 50 50
+              v -40 M 50 35
+              l -10 -10
+              M 50 35
+              l 10 -10
+              M 50 25
+              l -7 -7
+              M 50 25
+              l 7 -7"/>
+
+        <use href="#snowTree" transform="rotate(45, 50, 50)" />
+        <use href="#snowTree" transform="rotate(90, 50, 50)" />
+        <use href="#snowTree" transform="rotate(135, 50, 50)" />
+        <use href="#snowTree" transform="rotate(180, 50, 50)" />
+        <use href="#snowTree" transform="rotate(225, 50, 50)" />
+        <use href="#snowTree" transform="rotate(270, 50, 50)" />
+        <use href="#snowTree" transform="rotate(315, 50, 50)" />
     </g>
 
 
@@ -929,7 +979,9 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
     </style>
 
 
-    <defs>
+    <defs id="horlogeDefs">
+        <g id="meteo"/>
+        <g id="sun_R_S"/>
 
         <!-- Adapted drawables -->
         <use id="drop" href="#p_droplet" transform="scale(0.3)"/>
@@ -947,7 +999,8 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                     repeatCount="indefinite"/>
         </use>
 
-        <use id="smallMoon" href="#moon" transform="scale(0.5)"/>
+        <use id="smallMoon" href="#moon" transform="scale(0.7)"/>
+
         <g id="sunset" transform="translate(-50 -50)">
             <use href="#smallMoon" x="50" y="50"/>
         </g>
@@ -1037,28 +1090,15 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         <use id="f_Drizzle" href="#Drizzle" transform="scale(0.9)"/>
         <use id="f_Thunderstorm" href="#Thunderstorm" transform="scale(0.9)"/>
         <use id="f_Snow" href="#Snow" transform="scale(0.9)"/>
-        <use id="f_Clear" href="#Clear"/>
+        <use id="f_ClearSun" href="#Clear"/>
+        <use id="f_ClearMoon" href="#smallMoon"/>
 
     </defs>
 
+    <!-- Needs to be able to hide behind everything -->
+    <use href="#meteo" x="500" y="500"/>
+    <use href="#sun_R_S" x="500" y="500"/>
 
-    <!-- Testing -->
-<!--    <use href="#Thunderstorm" x="50" y="70"/>-->
-<!--    <rect x="0" y="0" width="100" height="100"/>-->
-<!--    <use href="#Rain" x="50" y="50"/>-->
-
-<!--    <rect x="0" y="100" width="100" height="100"/>-->
-<!--    <use href="#Thunderstorm" x="50" y="150"/>-->
-
-<!--    <rect x="100" y="100" width="100" height="100"/>-->
-<!--    <use href="#Drizzle" x="150" y="150"/>-->
-
-<!--    <rect x="100" y="0" width="100" height="100"/>-->
-<!--    <use href="#Clear" x="150" y="50"/>-->
-
-<!--    <rect x="0" y="200" width="100" height="100"/>-->
-<!--    <use href="#Snow" x="50" y="250"/>-->
-    <!-- -->
 
     <!-- Message Box -->
     <mask id="windowMask">
@@ -1078,6 +1118,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
     <use href="#moon" x="500" y="700"/>
 
     <circle id="button" onclick="switchDisplay()" cx="625" cy="300" r="30" stroke="hsl(0, 0%, 22%)" stroke-width="3"/>
+
 
 </svg>
 
