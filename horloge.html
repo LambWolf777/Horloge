@@ -17,7 +17,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
     <title>Horloge</title>
 
     <!-- Define our functions here -->
-    <!-- getTime() void function, changes time in html document -->
     <script>
         window.onload = init;
 
@@ -159,7 +158,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         //      - Rain
         //      - Snow
         //      - Clear
-        //      - *** Others, group 7xx ...? what should we do for these special cases
+        //      - *** Others, group 7xx ...? -> Clear
         //
         //  Should we check the precise description..?
         function getMeteoArray(meteoJSON) {
@@ -428,8 +427,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
                              "Thunderstorm", "Snow"];
 
             for (let i = 0; i < 24; i++) {
-                // let meteo = meteoArray[i];
-                let meteo = allowed[i%6];
+                let meteo = meteoArray[i];
 
                 let trueHour = (currentHour + i) % 24;
                 let sunrise = rise_set_Hours["sunrise"];
@@ -911,7 +909,7 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         }
 
         .time_cell {
-            fill: gray;
+            fill: rgb(231, 222, 93);
             stroke: black;
             stroke-width: 2px;
         }
@@ -930,23 +928,43 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             }
         }
 
-        @keyframes swaying {
-            from {
-                transform: translateX(-10px);
+        @keyframes glowDarkBlue {
+            0% {
+                fill: rgb(28, 41, 100)
             }
-            to {
-                transform: translate(10px);
+            50% {
+                fill: rgb(24,34,77)
+            }
+            /* Darker */
+            100% {
+                fill: rgb(15, 22, 49)
             }
         }
 
+        @keyframes activeGlow {
+            0% {
+                fill: rgb(0, 68, 255)
+            }
+            100% {
+                fill: rgb(231, 222, 93);
+            }
+
+        }
 
         #button {
-            fill: red;
+            stroke: rgb(68, 68, 68);
+            stroke-width: 3;
+            animation: glowDarkBlue 10s ease-in alternate infinite;
         }
 
         #button:active {
-            fill: rgb(119, 0, 0);
+            stroke: white;
         }
+
+        #button:hover {
+            animation: activeGlow 1s linear alternate infinite;
+        }
+
 
         #windowMask {
             mask-type: luminance;
@@ -1115,9 +1133,9 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
     <!-- Other components -->
     <circle cx="500" cy="500" r="400" fill="black" mask="url(#windowMask)"/>
 
-    <use href="#moon" x="500" y="700"/>
+    <use href="#moon" x="502" y="700"/>
 
-    <circle id="button" onclick="switchDisplay()" cx="625" cy="300" r="30" stroke="hsl(0, 0%, 22%)" stroke-width="3"/>
+    <circle id="button" onclick="switchDisplay()" cx="507" cy="300" r="45"/>
 
 
 </svg>
