@@ -69,8 +69,14 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         function updateMeteo(meteo) {
             let hourWeather = getMeteoArray(meteo);
 
-            setMeteo(hourWeather)
-            setSun_R_S(meteo);
+            let info = getSun_R_S(meteo);
+
+            let rise_set_Hours = {
+                "sunrise": info["sunrise"]["h"],
+                "sunset": info["sunset"]["h"]
+            }
+            setMeteo(hourWeather, rise_set_Hours)
+            setSun_R_S(rise_set_Hours);
 
             moon_scaling(meteo["daily"][0]["moon_phase"]);
         }
@@ -280,13 +286,13 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
             if (displayingWeather) {
                 //make weather stuff 'display: none;'' or a fancier animation if we'd like
                 //make sunrise stuff display
-                document.getElementById("meteo_cadrant").setAttribute("display", "default");
+                document.getElementById("meteo").setAttribute("display", "default");
                 document.getElementById("sun_R_S").setAttribute("display", "none");
 
             } else {
                 //make sunset/sunrise stuff 'display: none;'' or a fancier animation if we'd like
                 //make weather stuff display
-                document.getElementById("meteo_cadrant").setAttribute("display", "none");
+                document.getElementById("meteo").setAttribute("display", "none");
                 document.getElementById("sun_R_S").setAttribute("display", "default");
 
             }
@@ -295,11 +301,9 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         // Creates a <g id="sun_R_S"> containing the necessary elements to show the hours
         // of sunrise and sunset outside the hours 'Cadrans'
-        function setSun_R_S(meteoJSON) {
-            let info = getSun_R_S(meteoJSON);
-
-            let sunrise = info["sunrise"]["h"];
-            let sunset = info["sunset"]["h"];
+        function setSun_R_S(rise_set_Hours) {
+            let sunrise = rise_set_Hours["sunrise"];
+            let sunset = rise_set_Hours["sunset"];
 
             let increment = -2 * Math.PI / 24;  // Move by one hour
             const topTheta = Math.PI / 2;  // Aligned on hour 0
@@ -353,46 +357,61 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         }
 
 
-        function setMeteo(meteoArray) {
+        function setMeteo(meteoArray, rise_set_Hours) {
+            let sunrise = rise_set_Hours["sunrise"];
+            let sunset = rise_set_Hours["sunset"];
+
+            let increment = -2 * Math.PI / 24;  // Move by one hour
+            const topTheta = Math.PI / 2;       // Aligned on midnight
+
+            let currentHour = new Date().getHours();
+            let startTheta = topTheta + increment*currentHour
+
 
             growSVG("horloge", "g",
-            {
-                "id": "meteo_cadrant",
-                "display": "none"   // Hidden on load
-            }
+                {
+                    "id": "meteo",
+                    "display": "default"   // Shown on load
+                }
             );
 
-            growSVG("meteo_cadrant", "path",
-            {
-                "d": polarRect(500, 500, 400, 110, 0, Math.PI),
-                "fill": "black",
-                "stroke": "black",
-                "stroke-width": "2"
-            }
-            );
-
-            growSVG("meteo_cadrant", "path",
-            {
-                "d": polarRect(500, 500, 400, 110, Math.PI, Math.PI),
-                "fill": "black",
-                "stroke": "black",
-                "stroke-width": "2"
-            }
-            );
+            const allowed = ["Clear", "Clouds",
+                             "Rain", "Drizzle",
+                             "Thunderstorm", "Snow"];
 
             for (let i = 0; i < 24; i++) {
 
-                meteo = meteoArray[i];
 
-                if (meteo == "Atmosphere") { //no svg for atmosphere, set it to clouds
-                    meteo = "Clouds";
+                // Unfortunately, changing the background makes it really hard to see come icons
+                let trueHour = (currentHour + i) % 24;
+                let color = "";
+
+                if ( trueHour >= sunrise && trueHour < sunset ) {
+                    color = "rgb(22,34,77)";
+                } else {
+                    color = "rgb(22,34,77)";
                 }
 
-                growSVG("meteo_cadrant", "use",
+                let meteo = allowed[i % 6];
+
+                growSVG("meteo", "path",
+                    {
+                        "d": polarRect(500, 500, 400, 100, startTheta + i*increment, increment),
+                        "stroke": "black",
+                        "stroke-width": "2",
+                        "fill": color,
+                    }
+                );
+
+                let centerPoint = polarPoint(500, 500, 450, startTheta + i*increment + increment/2)
+
+                if (! meteo in allowed ) { meteo = "Clear" }
+
+                growSVG("meteo", "use",
                 {
-                    "href": "#" + meteo,
-                    "x": 455*Math.cos(2*i*Math.PI/24 + 0.122173) + 500,
-                    "y": 455*Math.sin(2*i*Math.PI/24 + 0.122173) + 500
+                    "href": "#f_" + meteo,
+                    "x": centerPoint[0],
+                    "y": centerPoint[1],
                 }
                 );
             }
@@ -729,7 +748,6 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
                  L 15 50
                  L 45 40
-
                  L 30 0
                  Z"/>
     </g>
@@ -941,44 +959,51 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
 
         <use id="darkCloud" href="#p_cloud" transform="scale(-0.8, 1)" fill="rgb(100, 100, 100)"/>
         <use id="lightCloud" href="#p_cloud" transform="scale(0.8, 1)" fill="lightgray"/>
+        <use id="lightCloud2" href="#p_cloud" transform="scale(-0.8, 1)" fill="lightgray"/>
+
+        <g id="rainClouds" transform="translate(-50 -50)">
+            <use href="#lightCloud" x="60" y="50"/>
+            <use href="#darkCloud" x="40" y="55"/>
+        </g>
 
 
-        <!-- Meteo prediction drawables should all fit in a 100x100 box and to be placed by their centers -->
+        <!-- Normalized Meteo prediction drawables should
+        all fit in a 100x100 box and to be placed by their centers -->
         <g id="Clear">
             <use href="#p_sun"/>
         </g>
 
         <g id="Clouds" transform="translate(-50 -50)">
-            <use href="#lightCloud" x="60" y="50"/>
-            <use href="#darkCloud" x="40" y="55"/>
+            <use href="#lightCloud" x="60" y="75"/>
+            <use href="#lightCloud2" x="40" y="80"/>
         </g>
 
         <g id="Rain" transform="translate(-50 -50)">
-            <use href="#drop" x="25" y="40">
-                <animate attributeName="y" values="20;80" dur="1s" repeatCount="indefinite"/>
+            <use href="#drop" x="25" y="30">
+                <animate attributeName="y" values="30;80" dur="1s" repeatCount="indefinite"/>
             </use>
-            <use href="#drop" x="50" y="40">
-                <animate attributeName="y" values="20;80" dur="0.85s" repeatCount="indefinite"/>
+            <use href="#drop" x="50" y="30">
+                <animate attributeName="y" values="30;80" dur="0.85s" repeatCount="indefinite"/>
             </use>
-            <use href="#drop" x="75" y="40">
-                <animate attributeName="y" values="20;80" dur="0.75s" repeatCount="indefinite"/>
+            <use href="#drop" x="75" y="30">
+                <animate attributeName="y" values="30;80" dur="0.75s" repeatCount="indefinite"/>
             </use>
 
-            <use href="#Clouds" x="50" y="50"/>
+            <use href="#rainClouds" x="50" y="50"/>
         </g>
 
         <g id="Drizzle" transform="translate(-50 -50)">
-            <use href="#smallDrop" x="25" y="40">
-                <animate attributeName="y" values="20;80" dur="1s" repeatCount="indefinite"/>
+            <use href="#smallDrop" x="25" y="30">
+                <animate attributeName="y" values="30;80" dur="1s" repeatCount="indefinite"/>
             </use>
-            <use href="#smallDrop" x="50" y="40">
-                <animate attributeName="y" values="20;80" dur="0.85s" repeatCount="indefinite"/>
+            <use href="#smallDrop" x="50" y="30">
+                <animate attributeName="y" values="30;80" dur="0.85s" repeatCount="indefinite"/>
             </use>
-            <use href="#smallDrop" x="75" y="40">
-                <animate attributeName="y" values="20;80" dur="0.75s" repeatCount="indefinite"/>
+            <use href="#smallDrop" x="75" y="30">
+                <animate attributeName="y" values="30;80" dur="0.75s" repeatCount="indefinite"/>
             </use>
 
-            <use href="#Clouds" x="50" y="50"/>
+            <use href="#rainClouds" x="50" y="50"/>
         </g>
 
         <g id="Thunderstorm">
@@ -991,38 +1016,48 @@ Lien Miro:  https://miro.com/app/board/uXjVO9MT7jA=/
         </g>
 
         <g id="Snow" transform="translate(-50 -50)">
-            <use href="#snowflake" x="25" y="40">
-                <animate attributeName="y" values="20;80" dur="1s" repeatCount="indefinite"/>
+            <use href="#snowflake" x="25" y="30">
+                <animate attributeName="y" values="30;80" dur="1s" repeatCount="indefinite"/>
             </use>
-            <use href="#snowflake" x="50" y="40">
-                <animate attributeName="y" values="20;80" dur="0.85s" repeatCount="indefinite"/>
+            <use href="#snowflake" x="50" y="30">
+                <animate attributeName="y" values="30;80" dur="0.85s" repeatCount="indefinite"/>
             </use>
-            <use href="#snowflake" x="75" y="40">
-                <animate attributeName="y" values="20;80" dur="0.75s" repeatCount="indefinite"/>
+            <use href="#snowflake" x="75" y="30">
+                <animate attributeName="y" values="30;80" dur="0.75s" repeatCount="indefinite"/>
             </use>
 
             <use href="#lightCloud" x="50" y="50"/>
         </g>
+
+
+        <!-- Final meteo prediction drawables (some scaling to ensure no overlap)
+        Prefixed by f_ to mark final-->
+        <use id="f_Clouds" href="#Clouds" transform="scale(0.9)"/>
+        <use id="f_Rain" href="#Rain" transform="scale(0.9)"/>
+        <use id="f_Drizzle" href="#Drizzle" transform="scale(0.9)"/>
+        <use id="f_Thunderstorm" href="#Thunderstorm" transform="scale(0.9)"/>
+        <use id="f_Snow" href="#Snow" transform="scale(0.9)"/>
+        <use id="f_Clear" href="#Clear"/>
 
     </defs>
 
 
     <!-- Testing -->
 <!--    <use href="#Thunderstorm" x="50" y="70"/>-->
-    <rect x="0" y="0" width="100" height="100"/>
-    <use href="#Rain" x="50" y="50"/>
+<!--    <rect x="0" y="0" width="100" height="100"/>-->
+<!--    <use href="#Rain" x="50" y="50"/>-->
 
-    <rect x="0" y="100" width="100" height="100"/>
-    <use href="#Thunderstorm" x="50" y="150"/>
+<!--    <rect x="0" y="100" width="100" height="100"/>-->
+<!--    <use href="#Thunderstorm" x="50" y="150"/>-->
 
-    <rect x="100" y="100" width="100" height="100"/>
-    <use href="#Drizzle" x="150" y="150"/>
+<!--    <rect x="100" y="100" width="100" height="100"/>-->
+<!--    <use href="#Drizzle" x="150" y="150"/>-->
 
-    <rect x="100" y="0" width="100" height="100"/>
-    <use href="#Clear" x="150" y="50"/>
+<!--    <rect x="100" y="0" width="100" height="100"/>-->
+<!--    <use href="#Clear" x="150" y="50"/>-->
 
-    <rect x="0" y="200" width="100" height="100"/>
-    <use href="#Snow" x="50" y="250"/>
+<!--    <rect x="0" y="200" width="100" height="100"/>-->
+<!--    <use href="#Snow" x="50" y="250"/>-->
     <!-- -->
 
     <!-- Message Box -->
